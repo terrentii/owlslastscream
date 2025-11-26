@@ -1,0 +1,1 @@
+print("Bass is solo instrument!")
