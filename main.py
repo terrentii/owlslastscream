@@ -12,10 +12,14 @@ class RunningAlien(arcade.Sprite):
 
         self.textures = []
 
+
+        # Бег
         for i in range(14):
             frame_number = f"{i:02d}"
             alien_run = arcade.load_texture(f'resources/persons/alien_running/sprite_{frame_number}.png')
             self.textures.append(alien_run)
+
+        self.idle_texture = arcade.load_texture('resources/persons/steady_alien.png')
 
         self.texture = self.textures[0]
 
@@ -25,6 +29,22 @@ class RunningAlien(arcade.Sprite):
         self.frames_per_second = 24
 
     def update_animation(self, delta_time):
+        # Анимация покоя
+        if abs(self.change_x) > 0:
+            # Бежит
+            self.time_since_last_frame += delta_time
+            frame_duration = 1.0 / self.frames_per_second
+
+            if self.time_since_last_frame >= frame_duration:
+                self.current_frame = (self.current_frame + 1) % len(self.textures)
+                self.texture = self.textures[self.current_frame]
+                self.time_since_last_frame = 0
+        else:
+            # Стоит
+            self.texture = self.idle_texture
+            self.current_frame = 0
+            self.time_since_last_frame = 0
+
         self.time_since_last_frame += delta_time
 
         frame_duration = 1.0 / self.frames_per_second
