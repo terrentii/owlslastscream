@@ -1,5 +1,4 @@
 import arcade
-from PIL.ImageOps import scale
 
 WIDTH = 1280
 HEIGHT = 720
