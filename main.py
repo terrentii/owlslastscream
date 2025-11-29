@@ -96,7 +96,7 @@ class Window(arcade.Window):
     def on_key_release(self, key, modifiers: int) -> EVENT_HANDLE_STATE:  # Отпускание
         if key == arcade.key.LEFT or key == arcade.key.A:
             self.left_pressed = False
-        if key == arcade.key.RIGHT or key == arcade.key.D:
+        elif key == arcade.key.RIGHT or key == arcade.key.D:
             self.right_pressed = False
 
 
