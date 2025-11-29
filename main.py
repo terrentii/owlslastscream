@@ -1,4 +1,5 @@
 import arcade
+from pyglet.event import EVENT_HANDLE_STATE
 
 WIDTH = 1280
 HEIGHT = 720
@@ -54,6 +55,11 @@ class Window(arcade.Window):
         self.alien.center_x = WIDTH // 2
         self.alien.center_y = HEIGHT // 4
 
+        # нажатие клавиш
+        self.left_pressed = False
+        self.right_pressed = False
+        self.speed = 5 # скорость
+
         # Добавление в листы
         self.alien_list.append(self.alien)
 
@@ -64,9 +70,34 @@ class Window(arcade.Window):
 
         self.alien_list.draw()  # Зелёный человечек
 
-
     def on_update(self, delta_time):
+        self.alien.change_x = 0
+
+        if self.left_pressed and not self.right_pressed:
+            self.alien.change_x = -self.speed
+        elif self.right_pressed and not self.left_pressed:
+            self.alien.change_x = self.speed
+
+        self.alien_list.update()
+
         self.alien.update_animation(delta_time)
+
+        if self.alien.center_x < 0:
+            self.alien.center_x = 0
+        elif self.alien.center_x > WIDTH:
+            self.alien.center_x = WIDTH
+
+    def on_key_press(self, key, modifiers: int) -> EVENT_HANDLE_STATE:  # Нажатие
+        if key == arcade.key.LEFT or key == arcade.key.A:
+            self.left_pressed = True
+        if key == arcade.key.RIGHT or key == arcade.key.D:
+            self.right_pressed = True
+
+    def on_key_release(self, key, modifiers: int) -> EVENT_HANDLE_STATE:  # Отпускание
+        if key == arcade.key.LEFT or key == arcade.key.A:
+            self.left_pressed = False
+        if key == arcade.key.RIGHT or key == arcade.key.D:
+            self.right_pressed = False
 
 
 game = Window(WIDTH, HEIGHT, TITLE)
