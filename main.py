@@ -12,7 +12,6 @@ class RunningAlien(arcade.Sprite):
 
         self.textures = []
 
-
         # Бег
         for i in range(14):
             frame_number = f"{i:02d}"
@@ -45,18 +44,6 @@ class RunningAlien(arcade.Sprite):
             self.current_frame = 0
             self.time_since_last_frame = 0
 
-        self.time_since_last_frame += delta_time
-
-        frame_duration = 1.0 / self.frames_per_second
-
-        if self.time_since_last_frame >= frame_duration:
-            self.current_frame += 1
-            if self.current_frame >= len(self.textures):
-                self.current_frame = 0
-
-            self.texture = self.textures[self.current_frame]
-            self.time_since_last_frame = 0
-
 
 class Window(arcade.Window):
     def __init__(self, width, height, title):
@@ -78,7 +65,7 @@ class Window(arcade.Window):
         # нажатие клавиш
         self.left_pressed = False
         self.right_pressed = False
-        self.speed = 5 # скорость
+        self.speed = 5  # скорость
 
         # Добавление в листы
         self.alien_list.append(self.alien)
