@@ -26,11 +26,11 @@ class RunningAlien(arcade.Sprite):
             self.running_textures_left.append(alien_run_left)
 
         # idle
-        self.idle_texture_right = arcade.load_texture('resources/persons/steady_alien.png')
-        self.idle_texture_left = arcade.load_texture('resources/persons/steady_alien.png')
-        self.idle_texture_left = self.idle_texture_left.flip_left_right()
+        self.idle_texture_right = arcade.load_texture('resources/persons/steady_alien(1).png')
+        self.idle_texture_left = arcade.load_texture('resources/persons/steady_alien(2).png')
 
         self.texture = self.running_textures_right[0]
+        self._facing_right = True
 
         # Для анимации
         self.current_frame = 0
@@ -47,15 +47,30 @@ class RunningAlien(arcade.Sprite):
             if self.time_since_last_frame >= frame_duration:
                 self.current_frame = (self.current_frame + 1) % len(self.running_textures_right)
                 # направление
-                if self.change_x > 0:
+                facing_right = self.change_x > 0
+                self._facing_right = facing_right
+                
+                if facing_right:
                     self.texture = self.running_textures_right[self.current_frame]
                 else:
                     self.texture = self.running_textures_left[self.current_frame]
                 self.time_since_last_frame = 0
         else:
             # Стоит
-            if self.change_x == 0:
-                self.texture = self.idle_texture_right if self.change_x >= 0 else self.idle_texture_left
+            if hasattr(self, '_facing_right'):
+                facing_right = self._facing_right
+            else:
+                facing_right = True
+                
+            if self.change_x != 0:
+                facing_right = self.change_x > 0
+                self._facing_right = facing_right
+                
+            if facing_right:
+                self.texture = self.idle_texture_right
+            else:
+                self.texture = self.idle_texture_left
+
             self.current_frame = 0
             self.time_since_last_frame = 0
 
