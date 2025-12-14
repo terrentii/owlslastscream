@@ -26,6 +26,17 @@ class GameView(arcade.View):
         self.alien.center_y = settings.height // 4
         self.alien_list.append(self.alien)
         
+        # Настройка персонажа Ness
+        self.ness = arcade.Sprite('resources/persons/alien_ness/ness_no_anim.png', scale=0.22)
+        # Размещаем Ness в случайном месте поблизости от центра
+        import random
+        center_x = settings.width // 2 + 50
+        center_y = settings.height // 4
+        # Случайное смещение от центра в пределах ±200 пикселей
+        self.ness.center_x = center_x + random.randint(-200, 200)
+        self.ness.center_y = center_y + random.randint(-200, 200)
+        self.alien_list.append(self.ness)
+        
         # Управление
         self.left_pressed = False
         self.right_pressed = False
