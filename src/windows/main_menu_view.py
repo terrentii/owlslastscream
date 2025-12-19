@@ -15,7 +15,12 @@ class MainMenuView(arcade.View):
         self.play_text = None
         self.button_width = 0
         self.button_height = 0
-
+        self.settings_button = None  # НОВОЕ: кнопка настроек
+        self.settings_text = None    # НОВОЕ: текст настроек
+        self.button_width = 0
+        self.button_height = 0
+        self.button_spacing = 0      # НОВОЕ: расстояние между кнопками
+        
     def on_show_view(self):
         self.create_menu()
 
@@ -47,18 +52,18 @@ class MainMenuView(arcade.View):
     def create_menu(self):
         """Создание элементов главного меню"""
         self.batch = Batch()
-        if self.shape_list:
-            self.shape_list.clear()
+        self.shape_list.clear()
 
         center_x = self.window.width // 2
         title_y = self.window.height // 1.2
         button_y = self.window.height // 2
-
-        # Расчет размера шрифта для заголовка
         base_width = settings.width_min
-        title_font_size = int(24 * (self.window.width / base_width))
 
-        # Текст заголовка
+        # Размеры шрифтов
+        title_font_size = int(24 * (self.window.width / base_width))
+        button_font_size = int(20 * (self.window.width / base_width))
+
+        # === Заголовок ===
         self.title_text = arcade.Text(
             "Главное меню",
             center_x,
@@ -72,13 +77,9 @@ class MainMenuView(arcade.View):
             batch=self.batch
         )
 
-        # Создаем рамку для заголовка
-        title_width = self.title_text.content_width
-        title_height = self.title_text.content_height
-        padding = int(min(self.window.width, self.window.height) * 0.05)
-        title_rect_width = title_width + padding
-        title_rect_height = title_height + padding
-
+        # Рамка вокруг заголовка
+        title_rect_width = self.title_text.content_width + int(min(self.window.width, self.window.height) * 0.05)
+        title_rect_height = self.title_text.content_height + int(min(self.window.width, self.window.height) * 0.05)
         title_rect = arcade.shape_list.create_rectangle_outline(
             center_x=center_x,
             center_y=title_y,
@@ -89,8 +90,7 @@ class MainMenuView(arcade.View):
         )
         self.shape_list.append(title_rect)
 
-        # кнопка Играть
-        button_font_size = int(20 * (self.window.width / base_width))
+        # === Кнопка "Играть" ===
         self.play_text = arcade.Text(
             "Играть",
             center_x,
@@ -103,12 +103,10 @@ class MainMenuView(arcade.View):
             anchor_y="center",
             batch=self.batch
         )
-
-        # Размеры кнопки
         self.button_width = self.play_text.content_width * 1.5
         self.button_height = self.play_text.content_height * 1.5
+        self.button_spacing = self.button_height * 1.5  # Расстояние между кнопками
 
-        # Фон кнопки
         self.play_button = arcade.shape_list.create_rectangle_filled(
             center_x=center_x,
             center_y=button_y,
@@ -116,12 +114,32 @@ class MainMenuView(arcade.View):
             height=self.button_height,
             color=arcade.color.GREEN
         )
-
-        self.play_text.x = center_x
-        self.play_text.y = button_y
-        
-        # Добавляем фон кнопки в список фигур
         self.shape_list.append(self.play_button)
+
+        # === Кнопка "Настройки" ===
+        settings_y = button_y - self.button_spacing  # Ниже кнопки "Играть"
+
+        self.settings_text = arcade.Text(
+            "Настройки",
+            center_x,
+            settings_y,
+            arcade.color.WHITE,
+            button_font_size,
+            bold=True,
+            align="center",
+            anchor_x="center",
+            anchor_y="center",
+            batch=self.batch
+        )
+
+        self.settings_button = arcade.shape_list.create_rectangle_filled(
+            center_x=center_x,
+            center_y=settings_y,
+            width=self.button_width,
+            height=self.button_height,
+            color=arcade.color.GREEN
+        )
+        self.shape_list.append(self.settings_button)
 
     def check_button_click(self, x, y):
         """Проверка нажатия на кнопку"""
