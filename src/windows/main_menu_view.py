@@ -103,8 +103,8 @@ class MainMenuView(arcade.View):
             anchor_y="center",
             batch=self.batch
         )
-        self.button_width = self.play_text.content_width * 1.5
-        self.button_height = self.play_text.content_height * 1.5
+        self.button_width = self.play_text.content_width * 1.6
+        self.button_height = self.play_text.content_height * 1.6
         self.button_spacing = self.button_height * 1.5  # Расстояние между кнопками
 
         self.play_button = arcade.shape_list.create_rectangle_filled(

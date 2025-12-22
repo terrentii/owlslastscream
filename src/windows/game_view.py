@@ -10,7 +10,7 @@ class GameView(arcade.View):
         self.window = window
         
         # Настройка фона
-        self.bg = arcade.Sprite('resources/background/bg_snow.png', scale=1.0)
+        self.bg = arcade.Sprite('resources/background/snow_blank.png', scale=1.0)
         self.bg.center_x = 0
         self.bg.center_y = 0
         self.bg_list = arcade.SpriteList()
@@ -19,7 +19,8 @@ class GameView(arcade.View):
         # Настройка елок
         self.spruce_list = arcade.SpriteList()
         for i in range(1000):
-            spruce = arcade.Sprite('resources/background/outer_space/spruce_1.png', scale=0.5)
+            spruce_type = 'spruce_3.png' if i % 3 == 0 else 'spruce_2.png' if i % 3 == 1 else 'spruce_1.png'
+            spruce = arcade.Sprite(f'resources/background/outer_space/{spruce_type}', scale=0.5)
             spruce.center_x = rd.randint(-10000, 10000)
             spruce.center_y = rd.randint(-10000, 10000)
             self.spruce_list.append(spruce)
