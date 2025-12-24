@@ -75,7 +75,8 @@ if __name__ == "__main__":
     spruce_paths = [
         "resources/background/outer_space/spruce_1.png",
         "resources/background/outer_space/spruce_2.png",
-        "resources/background/outer_space/spruce_3.png"
+        "resources/background/outer_space/spruce_3.png",
+        "resources/background/outer_space/spruce_4.png"
     ]
     output_path = "resources/background/snow_with_spruces.png"
     

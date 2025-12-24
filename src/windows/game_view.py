@@ -10,7 +10,7 @@ class GameView(arcade.View):
         self.window = window
         
         # Настройка фона
-        self.bg = arcade.Sprite('resources/background/snow_blank.png', scale=1.0)
+        self.bg = arcade.Sprite('resources/background/snow_with_spruces.png', scale=1.0)
         self.bg.center_x = 0
         self.bg.center_y = 0
         self.bg_list = arcade.SpriteList()
