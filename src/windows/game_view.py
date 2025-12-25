@@ -32,6 +32,12 @@ class GameView(arcade.View):
         self.alien.center_y = settings.height // 4
         self.alien_list.append(self.alien)
         
+        # Настройка корабля с коллизией
+        self.spaceship = arcade.Sprite('resources/buildings/spaceship/spaceship.gif', scale=0.15)
+        self.spaceship.center_x = settings.width // 2 - 500
+        self.spaceship.center_y = settings.height // 2 - 1500
+        self.alien_list.append(self.spaceship)
+        
         # Настройка Ness
         self.ness = arcade.Sprite('resources/persons/alien_ness/ness_no_anim.png', scale=0.22)
         # Ness
@@ -74,8 +80,15 @@ class GameView(arcade.View):
         elif self.down_pressed and not self.up_pressed:
             self.alien.change_y = -settings.PLAYER_SPEED
             
+        # Обновление позиций
         self.alien_list.update()
         self.alien.update_animation(delta_time)
+        
+        # Проверка коллизии пришельца с кораблем
+        if arcade.check_for_collision(self.alien, self.spaceship):
+            # Возвращаем пришельца на предыдущую позицию при столкновении
+            self.alien.center_x -= self.alien.change_x
+            self.alien.center_y -= self.alien.change_y
 
         # Позиция камеры с небольшим смещением вверх
         camera_x = self.alien.center_x
