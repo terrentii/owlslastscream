@@ -85,6 +85,6 @@ if __name__ == "__main__":
         background_path=background_path,
         spruce_paths=spruce_paths,
         output_path=output_path,
-        num_spruces=1000,
-        safe_zone_radius=400
+        num_spruces=5000,
+        safe_zone_radius=1500  # Увеличенный радиус поляны без елок
     )

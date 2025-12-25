@@ -15,16 +15,10 @@ class GameView(arcade.View):
         self.bg.center_y = 0
         self.bg_list = arcade.SpriteList()
         self.bg_list.append(self.bg)
-        
-        # Настройка елок
+
+        # Елки удалены по запросу пользователя
         self.spruce_list = arcade.SpriteList()
-        for i in range(1000):
-            spruce_type = 'spruce_3.png' if i % 3 == 0 else 'spruce_2.png' if i % 3 == 1 else 'spruce_1.png'
-            spruce = arcade.Sprite(f'resources/background/outer_space/{spruce_type}', scale=0.5)
-            spruce.center_x = rd.randint(-10000, 10000)
-            spruce.center_y = rd.randint(-10000, 10000)
-            self.spruce_list.append(spruce)
-        
+
         # Настройка камеры
         self.camera = arcade.camera.Camera2D()
         self.camera.use()
