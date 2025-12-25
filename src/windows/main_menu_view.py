@@ -145,11 +145,17 @@ class MainMenuView(arcade.View):
         """Проверка нажатия на кнопку"""
         center_x = self.window.width // 2
         button_y = self.window.height // 2
+        settings_y = button_y - self.button_spacing
 
-        # Проверка
+        # Кнопка "Играть"
         if (center_x - self.button_width / 2 < x < center_x + self.button_width / 2 and 
             button_y - self.button_height / 2 < y < button_y + self.button_height / 2):
             self.start_game()
+
+        # Кнопка "Настройки"
+        elif (center_x - self.button_width / 2 < x < center_x + self.button_width / 2 and 
+            settings_y - self.button_height / 2 < y < settings_y + self.button_height / 2):
+            self.window.switch_view("settings")
 
     def start_game(self):
         """Запуск игры"""
