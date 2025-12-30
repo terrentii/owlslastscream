@@ -10,7 +10,11 @@ class GameView(arcade.View):
         self.window = window
         
         # Настройка фона
-        self.bg = arcade.Sprite('resources/background/snow_with_spruces.png', scale=1.0)
+        # Загружаем текстуру фона
+        bg_texture = arcade.load_texture('resources/background/snow_blank.png')
+        self.bg = arcade.Sprite()
+        self.bg.texture = bg_texture
+        self.bg.scale = 10.0
         self.bg.center_x = 0
         self.bg.center_y = 0
         self.bg_list = arcade.SpriteList()
@@ -32,11 +36,11 @@ class GameView(arcade.View):
         self.alien.center_y = settings.height // 4
         self.alien_list.append(self.alien)
         
-        # Настройка корабля с коллизией
-        self.spaceship = arcade.Sprite('resources/buildings/spaceship/spaceship.gif', scale=0.15)
-        self.spaceship.center_x = settings.width // 2 - 500
-        self.spaceship.center_y = settings.height // 2 - 1500
-        self.alien_list.append(self.spaceship)
+        # # Настройка корабля с коллизией
+        # self.spaceship = arcade.Sprite('resources/buildings/spaceship/spaceship.gif', scale=0.15)
+        # self.spaceship.center_x = settings.width // 2 - 500
+        # self.spaceship.center_y = settings.height // 2 - 1500
+        # self.alien_list.append(self.spaceship)
         
         # Настройка Ness
         self.ness = arcade.Sprite('resources/persons/alien_ness/ness_no_anim.png', scale=0.22)
@@ -84,11 +88,11 @@ class GameView(arcade.View):
         self.alien_list.update()
         self.alien.update_animation(delta_time)
         
-        # Проверка коллизии пришельца с кораблем
-        if arcade.check_for_collision(self.alien, self.spaceship):
-            # Возвращаем пришельца на предыдущую позицию при столкновении
-            self.alien.center_x -= self.alien.change_x
-            self.alien.center_y -= self.alien.change_y
+        # # Проверка коллизии пришельца с кораблем
+        # if arcade.check_for_collision(self.alien, self.spaceship):
+        #     # Возвращаем пришельца на предыдущую позицию при столкновении
+        #     self.alien.center_x -= self.alien.change_x
+        #     self.alien.center_y -= self.alien.change_y
 
         # Позиция камеры с небольшим смещением вверх
         camera_x = self.alien.center_x
