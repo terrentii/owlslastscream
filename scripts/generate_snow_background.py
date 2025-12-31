@@ -5,7 +5,7 @@ def create_snow_background_with_spruces(
     background_path: str,
     spruce_paths: list,
     output_path: str,
-    num_spruces: int = 1000,
+    num_spruces: int = 100,
     safe_zone_radius: int = 400
 ):
     """
@@ -70,21 +70,18 @@ def create_snow_background_with_spruces(
     print(f"Фоновое изображение сохранено: {output_path}")
 
 if __name__ == "__main__":
-    # Пути к файлам
     background_path = "resources/background/snow_blank.png"
     spruce_paths = [
         "resources/background/outer_space/spruce_1.png",
         "resources/background/outer_space/spruce_2.png",
-        "resources/background/outer_space/spruce_3.png",
-        "resources/background/outer_space/spruce_4.png"
+        "resources/background/outer_space/spruce_3.png"
     ]
     output_path = "resources/background/snow_with_spruces.png"
-    
-    # Создаем фон с елками
+
     create_snow_background_with_spruces(
         background_path=background_path,
         spruce_paths=spruce_paths,
         output_path=output_path,
-        num_spruces=5000,
-        safe_zone_radius=1500  # Увеличенный радиус поляны без елок
+        num_spruces=1000,
+        safe_zone_radius=700
     )
