@@ -1,31 +1,28 @@
-# src/windows/settings_view.py
 import arcade
 from src.settings import settings
+from pyglet.graphics import Batch
 
 class SettingsView(arcade.View):
     """Окно настроек игры"""
     def __init__(self, window):
         super().__init__()
         self.window = window
-        self.batch = arcade.SpriteList()  # Используем SpriteList как контейнер для Text
+        self.batch = Batch()
+        self.shape_list = arcade.shape_list.ShapeElementList()
         self.title_text = None
         self.back_button = None
         self.back_text = None
         self.button_width = 0
         self.button_height = 0
+        self.button_spacing = 0
 
     def on_show_view(self):
-        self.setup()
+        self.create_settings()
 
     def on_draw(self):
         self.clear()
+        self.shape_list.draw()
         self.batch.draw()
-
-        # Рисуем заголовок и кнопку отдельно, если нужно
-        if self.title_text:
-            self.title_text.draw()
-        if self.back_text:
-            self.back_text.draw()
 
     def on_update(self, delta_time):
         pass
@@ -34,13 +31,20 @@ class SettingsView(arcade.View):
         if key == arcade.key.ESCAPE:
             self.window.switch_view("main_menu")
 
+    def on_resize(self, width: float, height: float):
+        super().on_resize(width, height)
+        self.create_settings()
+
     def on_mouse_press(self, x, y, button, modifiers):
         if button == arcade.MOUSE_BUTTON_LEFT:
             self.check_back_button(x, y)
 
-    def setup(self):
+    def create_settings(self):
         """Создание элементов интерфейса настроек"""
-        self.batch = arcade.SpriteList()
+        self.batch = Batch()
+        self.shape_list.clear()
+
+
         center_x = self.window.width // 2
         title_y = self.window.height * 0.8
         back_y = self.window.height * 0.2
@@ -59,7 +63,8 @@ class SettingsView(arcade.View):
             title_font_size,
             bold=True,
             anchor_x="center",
-            anchor_y="center"
+            anchor_y="center",
+            batch=self.batch
         )
 
         # === Кнопка "Назад" ===
@@ -71,10 +76,12 @@ class SettingsView(arcade.View):
             button_font_size,
             bold=True,
             anchor_x="center",
-            anchor_y="center"
+            anchor_y="center",
+            batch=self.batch
         )
         self.button_width = self.back_text.content_width * 1.6
         self.button_height = self.back_text.content_height * 1.6
+        self.button_spacing = self.button_height * 1.5
 
         # Прямоугольник под кнопкой (визуальный элемент)
         self.back_button = arcade.shape_list.create_rectangle_filled(
@@ -84,7 +91,7 @@ class SettingsView(arcade.View):
             height=self.button_height,
             color=arcade.color.BLUE
         )
-        self.back_button.draw()  # Рисуем сразу, так как shape_list не включен в SpriteList
+        self.shape_list.append(self.back_button)
 
     def check_back_button(self, x, y):
         """Проверка нажатия на кнопку 'Назад'"""
@@ -94,8 +101,3 @@ class SettingsView(arcade.View):
         if (center_x - self.button_width / 2 < x < center_x + self.button_width / 2 and
             back_y - self.button_height / 2 < y < back_y + self.button_height / 2):
             self.window.switch_view("main_menu")
-
-    def on_resize(self, width: float, height: float):
-        """Обработка изменения размера окна"""
-        super().on_resize(width, height)
-        self.setup()
