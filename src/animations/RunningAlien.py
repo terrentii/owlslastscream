@@ -1,5 +1,6 @@
 import arcade
-from src.registry import ALIEN_RUNNING_PATH, ALIEN_IDLE_RIGHT_PATH, ALIEN_IDLE_LEFT_PATH
+from src.registry import ALIEN_IDLE_RIGHT_PATH, ALIEN_IDLE_LEFT_PATH, \
+    ALIEN_RUNNING_IN_SPACESUIT_PATH
 
 
 class RunningAlien(arcade.Sprite):
@@ -11,13 +12,13 @@ class RunningAlien(arcade.Sprite):
         # Бег
         self.running_textures_right = []
         self.running_textures_left = []
-        for i in range(14):
-            frame_number = f"{i:02d}"
+        for i in range(1, 19):
+            frame_number = i #f"{i:02d}"
             # движение вправо
-            alien_run_right = arcade.load_texture(f'{ALIEN_RUNNING_PATH}{frame_number}.png')
+            alien_run_right = arcade.load_texture(f'{ALIEN_RUNNING_IN_SPACESUIT_PATH}{frame_number}.png')
             self.running_textures_right.append(alien_run_right)
             # движение влево
-            alien_run_left = arcade.load_texture(f'{ALIEN_RUNNING_PATH}{frame_number}.png')
+            alien_run_left = arcade.load_texture(f'{ALIEN_RUNNING_IN_SPACESUIT_PATH}{frame_number}.png')
             alien_run_left = alien_run_left.flip_left_right()
             self.running_textures_left.append(alien_run_left)
 
