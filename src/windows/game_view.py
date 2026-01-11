@@ -1,5 +1,4 @@
 import arcade
-import random as rd
 from src.settings import settings
 from src.animations.RunningAlien import RunningAlien
 
@@ -10,8 +9,7 @@ class GameView(arcade.View):
         self.window = window
         
         # Настройка фона
-        # Загружаем текстуру фона
-        bg_texture = arcade.load_texture('resources/background/snow_blank.png')
+        bg_texture = arcade.load_texture('resources/background/forest_map.png')
         self.bg = arcade.Sprite()
         self.bg.texture = bg_texture
         self.bg.scale = 10.0
@@ -20,8 +18,15 @@ class GameView(arcade.View):
         self.bg_list = arcade.SpriteList()
         self.bg_list.append(self.bg)
 
-        # Елки удалены по запросу пользователя
-        self.spruce_list = arcade.SpriteList()
+        # Фильтры
+        night_texture = arcade.load_texture('resources/background/night.png')
+        self.night = arcade.Sprite()
+        self.filter_list = arcade.SpriteList()
+        self.night.texture = night_texture
+        self.night.scale = 20.0
+        self.night.center_x = 0
+        self.night.center_y = 0
+        self.filter_list.append(self.night)
 
         # Настройка камеры
         self.camera = arcade.camera.Camera2D()
@@ -31,16 +36,11 @@ class GameView(arcade.View):
         # Настройка пришельца
         self.alien_list = arcade.SpriteList()
 
-        self.alien = RunningAlien(scale=1.0)
+        self.alien = RunningAlien(scale=3.0)
         self.alien.center_x = settings.width // 2
         self.alien.center_y = settings.height // 4
         self.alien_list.append(self.alien)
-        
-        # # Настройка корабля с коллизией
-        # self.spaceship = arcade.Sprite('resources/buildings/spaceship/spaceship.gif', scale=0.15)
-        # self.spaceship.center_x = settings.width // 2 - 500
-        # self.spaceship.center_y = settings.height // 2 - 1500
-        # self.alien_list.append(self.spaceship)
+
         
         # Настройка Ness
         self.ness = arcade.Sprite('resources/persons/alien_ness/ness_no_anim.png', scale=0.22)
@@ -58,15 +58,16 @@ class GameView(arcade.View):
         self.right_pressed = False
         self.up_pressed = False
         self.down_pressed = False
-        
+
     def on_draw(self):
         """Отрисовка игрового экрана"""
         self.clear()
         
         self.camera.use()
-        self.bg_list.draw()
-        self.spruce_list.draw()
-        self.alien_list.draw()
+        self.bg_list.draw(pixelated=True)
+        self.alien_list.draw(pixelated=True)
+
+        self.filter_list.draw()
 
     def on_update(self, delta_time):
         """Обновление игровой логики"""
@@ -87,12 +88,6 @@ class GameView(arcade.View):
         # Обновление позиций
         self.alien_list.update()
         self.alien.update_animation(delta_time)
-        
-        # # Проверка коллизии пришельца с кораблем
-        # if arcade.check_for_collision(self.alien, self.spaceship):
-        #     # Возвращаем пришельца на предыдущую позицию при столкновении
-        #     self.alien.center_x -= self.alien.change_x
-        #     self.alien.center_y -= self.alien.change_y
 
         # Позиция камеры с небольшим смещением вверх
         camera_x = self.alien.center_x

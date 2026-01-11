@@ -13,7 +13,7 @@ class RunningAlien(arcade.Sprite):
         self.running_textures_right = []
         self.running_textures_left = []
         for i in range(1, 19):
-            frame_number = i #f"{i:02d}"
+            frame_number = i
             # движение вправо
             alien_run_right = arcade.load_texture(f'{ALIEN_RUNNING_IN_SPACESUIT_PATH}{frame_number}.png')
             self.running_textures_right.append(alien_run_right)
@@ -36,21 +36,24 @@ class RunningAlien(arcade.Sprite):
 
     def update_animation(self, delta_time):
         # Анимация
-        if abs(self.change_x) > 0:
+        moving = abs(self.change_x) > 0 or abs(self.change_y) > 0
+        
+        if moving:
             # Бежит
             self.time_since_last_frame += delta_time
             frame_duration = 1.0 / self.frames_per_second
 
             if self.time_since_last_frame >= frame_duration:
                 self.current_frame = (self.current_frame + 1) % len(self.running_textures_right)
-                # направление
-                facing_right = self.change_x > 0
-                self._facing_right = facing_right
+                
+                if self.change_x != 0:
+                    self._facing_right = self.change_x > 0
 
-                if facing_right:
+                if self._facing_right:
                     self.texture = self.running_textures_right[self.current_frame]
                 else:
                     self.texture = self.running_textures_left[self.current_frame]
+                
                 self.time_since_last_frame = 0
         else:
             # Стоит
