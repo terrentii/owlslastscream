@@ -1,4 +1,5 @@
 import arcade
+import math
 from src.settings import settings
 from src.animations.RunningAlien import RunningAlien
 
@@ -13,8 +14,8 @@ class GameView(arcade.View):
         self.bg = arcade.Sprite()
         self.bg.texture = bg_texture
         self.bg.scale = 10.0
-        self.bg.center_x = 0
-        self.bg.center_y = 0
+        self.bg.center_x = settings.width // 2
+        self.bg.center_y = settings.height // 2
         self.bg_list = arcade.SpriteList()
         self.bg_list.append(self.bg)
 
@@ -38,10 +39,70 @@ class GameView(arcade.View):
 
         self.alien = RunningAlien(scale=3.0)
         self.alien.center_x = settings.width // 2
-        self.alien.center_y = settings.height // 4
+        self.alien.center_y = settings.height // 2
         self.alien_list.append(self.alien)
 
+        # Настройка стен
+        self.wall_list = arcade.SpriteList()
+        center_x = settings.width // 2
+        center_y = settings.height // 2
+        wall_texture = arcade.load_texture('resources/background/nothing.png')
+        wall_width = 64
+
         
+        # дороги
+        road_angles = [0, 120, 240]
+        road_width = 800
+        road_length = 6000
+        safe_zone_radius = 2000
+        
+        # по кругу
+        outer_radius = 2000
+        circumference = 2 * 3.14159 * outer_radius
+        num_walls = int(circumference / wall_width)
+        
+        for i in range(num_walls):
+            angle = 2 * 3.14159 * i / num_walls
+            angle_deg = math.degrees(angle)
+            in_road_area = False
+            for road_angle in road_angles:
+                # зона пропуска для дороги
+                angle_diff = abs(angle_deg - road_angle)
+                if angle_diff > 180:
+                    angle_diff = 360 - angle_diff
+                # если угол стены близок к углу дороги, пропускаем ее
+                if angle_diff < 10:  # зона пропуска
+                    in_road_area = True
+                    break
+            
+            if not in_road_area:
+                wall = arcade.Sprite()
+                wall.texture = wall_texture
+                wall.center_x = center_x + outer_radius * math.cos(angle)
+                wall.center_y = center_y + outer_radius * math.sin(angle)
+                wall.angle = angle_deg + 90  # Поворачиваем стену по касательной
+                self.wall_list.append(wall)
+            
+        # Добавляем стены вдоль дорог
+        for road_angle in road_angles:
+            road_angle_rad = math.radians(road_angle)
+            dx = math.cos(road_angle_rad)
+            dy = math.sin(road_angle_rad)
+            
+            # вектор для размещения стен по бокам дороги
+            perp_dx = -dy
+            perp_dy = dx
+            
+            # Размещаем стены вдоль дороги
+            for distance in range(safe_zone_radius + 40, road_length, 64):
+                for side_offset in [-road_width//2, road_width//2]:
+                    wall = arcade.Sprite()
+                    wall.texture = wall_texture
+                    wall.center_x = center_x + dx * distance + perp_dx * side_offset
+                    wall.center_y = center_y + dy * distance + perp_dy * side_offset
+                    wall.angle = road_angle + 90  # Поворачиваем стену перпендикулярно дороге
+                    self.wall_list.append(wall)
+            
         # Настройка Ness
         self.ness = arcade.Sprite('resources/persons/alien_ness/ness_no_anim.png', scale=0.22)
         # Ness
@@ -65,6 +126,7 @@ class GameView(arcade.View):
         
         self.camera.use()
         self.bg_list.draw(pixelated=True)
+        self.wall_list.draw(pixelated=True)
         self.alien_list.draw(pixelated=True)
 
         self.filter_list.draw()
@@ -88,6 +150,12 @@ class GameView(arcade.View):
         # Обновление позиций
         self.alien_list.update()
         self.alien.update_animation(delta_time)
+
+        # Проверка коллизии со стенами
+        if arcade.check_for_collision_with_list(self.alien, self.wall_list):
+            # При столкновении возвращаем пришельца на предыдущую позицию
+            self.alien.center_x -= self.alien.change_x
+            self.alien.center_y -= self.alien.change_y
 
         # Позиция камеры с небольшим смещением вверх
         camera_x = self.alien.center_x
