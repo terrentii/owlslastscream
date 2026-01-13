@@ -48,6 +48,16 @@ class GameView(arcade.View):
         center_y = settings.height // 2
         wall_texture = arcade.load_texture('resources/background/nothing.png')
         wall_width = 64
+        
+        # Размеры карты
+        map_width = 10000
+        map_height = 10000
+        
+        # Координаты границ карты
+        left_edge = center_x - map_width // 2
+        right_edge = center_x + map_width // 2
+        bottom_edge = center_y - map_height // 2
+        top_edge = center_y + map_height // 2
 
         
         # дороги
@@ -102,6 +112,43 @@ class GameView(arcade.View):
                     wall.center_y = center_y + dy * distance + perp_dy * side_offset
                     wall.angle = road_angle + 90  # Поворачиваем стену перпендикулярно дороге
                     self.wall_list.append(wall)
+
+        # Обнесем всю карту по периметру стенами (дополнительная мера)
+        # Нижняя сторона
+        for x in range(left_edge + wall_width//2, right_edge, wall_width):
+            wall = arcade.Sprite()
+            wall.texture = wall_texture
+            wall.center_x = x
+            wall.center_y = bottom_edge
+            wall.angle = 0  # Горизонтальная ориентация
+            self.wall_list.append(wall)
+        
+        # Верхняя сторона
+        for x in range(left_edge + wall_width//2, right_edge, wall_width):
+            wall = arcade.Sprite()
+            wall.texture = wall_texture
+            wall.center_x = x
+            wall.center_y = top_edge
+            wall.angle = 0  # Горизонтальная ориентация
+            self.wall_list.append(wall)
+            
+        # Левая сторона
+        for y in range(bottom_edge + wall_width//2, top_edge, wall_width):
+            wall = arcade.Sprite()
+            wall.texture = wall_texture
+            wall.center_x = left_edge
+            wall.center_y = y
+            wall.angle = 90  # Вертикальная ориентация
+            self.wall_list.append(wall)
+            
+        # Правая сторона
+        for y in range(bottom_edge + wall_width//2, top_edge, wall_width):
+            wall = arcade.Sprite()
+            wall.texture = wall_texture
+            wall.center_x = right_edge
+            wall.center_y = y
+            wall.angle = 90  # Вертикальная ориентация
+            self.wall_list.append(wall)
             
         # Настройка Ness
         self.ness = arcade.Sprite('resources/persons/alien_ness/ness_no_anim.png', scale=0.22)
