@@ -162,12 +162,11 @@ class GameView(arcade.View):
         # Настройка Ness
         self.ness = arcade.Sprite('resources/persons/alien_ness/ness_no_anim.png', scale=0.22)
         # Ness
-        import random
         center_x = settings.width // 2 + 50
         center_y = settings.height // 4
         
-        self.ness.center_x = center_x + random.randint(-200, 200)
-        self.ness.center_y = center_y + random.randint(-200, 200)
+        self.ness.center_x = center_x
+        self.ness.center_y = center_y
         self.alien_list.append(self.ness)
 
         # Настройка факелов
@@ -227,6 +226,10 @@ class GameView(arcade.View):
         self.spaceship.width = spaceship_texture.width * 10.0
         self.spaceship.height = spaceship_texture.height * 10.0
         
+        # Добавляем коллизию для Ness
+        self.ness.width = 110
+        self.ness.height = 110
+        
         # Управление
         self.left_pressed = False
         self.right_pressed = False
@@ -276,6 +279,12 @@ class GameView(arcade.View):
 
         # Проверка коллизии с spaceship
         if arcade.check_for_collision_with_list(self.alien, self.buildings_list):
+            # При столкновении возвращаем пришельца на предыдущую позицию
+            self.alien.center_x -= self.alien.change_x
+            self.alien.center_y -= self.alien.change_y
+            
+        # Проверка коллизии с Ness
+        if arcade.check_for_collision(self.alien, self.ness):
             # При столкновении возвращаем пришельца на предыдущую позицию
             self.alien.center_x -= self.alien.change_x
             self.alien.center_y -= self.alien.change_y
