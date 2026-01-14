@@ -1,5 +1,5 @@
 import arcade
-from src.registry import ALIEN_IDLE_RIGHT_PATH, ALIEN_IDLE_LEFT_PATH, \
+from src.registry import ALIEN_IDLE_RIGHT_PATH, \
     ALIEN_RUNNING_IN_SPACESUIT_PATH
 
 
@@ -24,7 +24,7 @@ class RunningAlien(arcade.Sprite):
 
         # idle
         self.idle_texture_right = arcade.load_texture(ALIEN_IDLE_RIGHT_PATH)
-        self.idle_texture_left = arcade.load_texture(ALIEN_IDLE_LEFT_PATH)
+        self.idle_texture_left = self.idle_texture_right.flip_left_right()
 
         self.texture = self.running_textures_right[0]
         self._facing_right = True

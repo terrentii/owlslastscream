@@ -170,6 +170,59 @@ class GameView(arcade.View):
         self.ness.center_y = center_y + random.randint(-200, 200)
         self.alien_list.append(self.ness)
 
+        # Настройка факелов
+        self.torch_list = arcade.SpriteList()
+        torch_texture = arcade.load_texture('resources/buildings/torch.png')
+        center_x = settings.width // 2
+        center_y = settings.height // 2
+        
+        # Размещаем факелы вдоль внешнего круга барьеров (радиус 2000), но гораздо реже
+        outer_radius = 1300
+        torch_spacing = 700
+        
+        # Общая длина окружности
+        circumference = 2 * 3.14159 * outer_radius
+        # Количество факелов
+        num_torches = int(circumference / torch_spacing)
+        
+        for i in range(num_torches):
+            angle = 2 * 3.14159 * i / num_torches
+
+            # Пропускаем места, где идут дороги
+            in_road_area = False
+            road_angles = [0, 120, 240]
+
+
+            if not in_road_area:
+                torch = arcade.Sprite(scale=3.0)
+                torch.texture = torch_texture
+                torch.center_x = center_x + outer_radius * math.cos(angle)
+                torch.center_y = center_y + outer_radius * math.sin(angle)
+                self.torch_list.append(torch)
+        
+        # Размещаем факелы вдоль дорог
+        road_width = 800
+        road_length = 6000
+        safe_zone_radius = 2000
+        
+        for road_angle in road_angles:
+            road_angle_rad = math.radians(road_angle)
+            dx = math.cos(road_angle_rad)
+            dy = math.sin(road_angle_rad)
+            
+            # Перпендикулярный вектор для размещения факелов по бокам дороги
+            perp_dx = -dy
+            perp_dy = dx
+            
+            # Размещаем факелы вдоль дороги с большим интервалом
+            for distance in range(safe_zone_radius + 200, road_length, 800):
+                for side_offset in [road_width//2 - 400, road_width//2 - 400]:
+                    torch = arcade.Sprite(scale=3.0)
+                    torch.texture = torch_texture
+                    torch.center_x = center_x + dx * distance + perp_dx * side_offset
+                    torch.center_y = center_y + dy * distance + perp_dy * side_offset
+                    self.torch_list.append(torch)
+
         # Добавляем коллизию для spaceship
         self.spaceship.width = spaceship_texture.width * 10.0
         self.spaceship.height = spaceship_texture.height * 10.0
@@ -187,11 +240,13 @@ class GameView(arcade.View):
         self.camera.use()
         self.bg_list.draw(pixelated=True)
         self.wall_list.draw()
-        self.alien_list.draw(pixelated=True)
+
 
 
         self.filter_list.draw()
+        self.torch_list.draw(pixelated=True)
         self.buildings_list.draw(pixelated=True)
+        self.alien_list.draw(pixelated=True)
 
     def on_update(self, delta_time):
         """Обновление игровой логики"""
@@ -224,6 +279,9 @@ class GameView(arcade.View):
             # При столкновении возвращаем пришельца на предыдущую позицию
             self.alien.center_x -= self.alien.change_x
             self.alien.center_y -= self.alien.change_y
+            
+        # Коллизия с факелами удалена - они декоративные элементы
+        # Факелы больше не создают препятствий для движения
 
         # Позиция камеры с небольшим смещением вверх
         camera_x = self.alien.center_x
