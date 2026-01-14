@@ -149,7 +149,16 @@ class GameView(arcade.View):
             wall.center_y = y
             wall.angle = 90  # Вертикальная ориентация
             self.wall_list.append(wall)
-            
+
+        # Настройки spaceship
+        spaceship_texture = arcade.load_texture('resources/buildings/spaceship/spaceship.png')
+        self.spaceship = arcade.Sprite(scale=10.0)
+        self.buildings_list = arcade.SpriteList()
+        self.spaceship.texture = spaceship_texture
+        self.spaceship.center_x = 0
+        self.spaceship.center_y = 0
+        self.buildings_list.append(self.spaceship)
+
         # Настройка Ness
         self.ness = arcade.Sprite('resources/persons/alien_ness/ness_no_anim.png', scale=0.22)
         # Ness
@@ -160,6 +169,10 @@ class GameView(arcade.View):
         self.ness.center_x = center_x + random.randint(-200, 200)
         self.ness.center_y = center_y + random.randint(-200, 200)
         self.alien_list.append(self.ness)
+
+        # Добавляем коллизию для spaceship
+        self.spaceship.width = spaceship_texture.width * 10.0
+        self.spaceship.height = spaceship_texture.height * 10.0
         
         # Управление
         self.left_pressed = False
@@ -173,8 +186,9 @@ class GameView(arcade.View):
         
         self.camera.use()
         self.bg_list.draw(pixelated=True)
-        self.wall_list.draw(pixelated=True)
+        self.wall_list.draw()
         self.alien_list.draw(pixelated=True)
+        self.buildings_list.draw(pixelated=True)
 
         self.filter_list.draw()
 
@@ -200,6 +214,12 @@ class GameView(arcade.View):
 
         # Проверка коллизии со стенами
         if arcade.check_for_collision_with_list(self.alien, self.wall_list):
+            # При столкновении возвращаем пришельца на предыдущую позицию
+            self.alien.center_x -= self.alien.change_x
+            self.alien.center_y -= self.alien.change_y
+
+        # Проверка коллизии с spaceship
+        if arcade.check_for_collision_with_list(self.alien, self.buildings_list):
             # При столкновении возвращаем пришельца на предыдущую позицию
             self.alien.center_x -= self.alien.change_x
             self.alien.center_y -= self.alien.change_y
