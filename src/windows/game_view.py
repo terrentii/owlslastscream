@@ -188,9 +188,10 @@ class GameView(arcade.View):
         self.bg_list.draw(pixelated=True)
         self.wall_list.draw()
         self.alien_list.draw(pixelated=True)
-        self.buildings_list.draw(pixelated=True)
+
 
         self.filter_list.draw()
+        self.buildings_list.draw(pixelated=True)
 
     def on_update(self, delta_time):
         """Обновление игровой логики"""
