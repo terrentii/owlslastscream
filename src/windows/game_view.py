@@ -160,14 +160,24 @@ class GameView(arcade.View):
         self.buildings_list.append(self.spaceship)
 
         # Настройка Ness
-        self.ness = arcade.Sprite('resources/persons/alien_ness/ness_darked.png', scale=0.22)
+        self.ness = arcade.Sprite('resources/persons/alien_ness/ness_darked.png')
         # Ness
-        center_x = settings.width // 2 + 50
-        center_y = settings.height // 4
+        ness_center_x = settings.width // 2 + 50
+        ness_center_y = settings.height // 4
         
-        self.ness.center_x = center_x
-        self.ness.center_y = center_y
+        self.ness.center_x = ness_center_x
+        self.ness.center_y = ness_center_y
         self.alien_list.append(self.ness)
+
+        # Настройка пришельца sor
+        self.sor = arcade.Sprite('resources/persons/alien_sor/alien_sor_not_animated.png')
+        self.sor.center_x = settings.width // 2 - 150
+        self.sor.center_y = settings.height // 4 + 500
+        self.alien_list.append(self.sor)
+
+        # Добавляем коллизию для sor
+        self.sor.width = 200
+        self.sor.height = 200
 
         # Настройка факелов
         self.torch_list = arcade.SpriteList()
@@ -283,6 +293,12 @@ class GameView(arcade.View):
             
         # Проверка коллизии с Ness
         if arcade.check_for_collision(self.alien, self.ness):
+            # При столкновении возвращаем пришельца на предыдущую позицию
+            self.alien.center_x -= self.alien.change_x
+            self.alien.center_y -= self.alien.change_y
+
+        # Проверка коллизии с sor
+        if arcade.check_for_collision(self.alien, self.sor):
             # При столкновении возвращаем пришельца на предыдущую позицию
             self.alien.center_x -= self.alien.change_x
             self.alien.center_y -= self.alien.change_y
