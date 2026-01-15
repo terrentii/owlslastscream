@@ -8,6 +8,10 @@ class GameView(arcade.View):
     def __init__(self, window):
         super().__init__()
         self.window = window
+        self.dialogue_active = False
+        self.dialogue_text = ""
+        super().__init__()
+        self.window = window
 
         # Настройка фона
         bg_texture = arcade.load_texture('resources/background/forest_map.png')
@@ -240,6 +244,25 @@ class GameView(arcade.View):
         self.ness.width = 110
         self.ness.height = 110
         
+        # Настройка диалогового окна
+        self.dialogue_box = arcade.SpriteSolidColor(400, 100, arcade.color.DARK_BLUE)
+        self.dialogue_box.center_x = settings.width // 2
+        self.dialogue_box.center_y = settings.height - 50
+        self.dialogue_sprite_list = arcade.SpriteList()
+        self.dialogue_sprite_list.append(self.dialogue_box)
+        
+        self.dialogue_text_sprite = arcade.Text(
+            "",
+            self.dialogue_box.center_x,
+            self.dialogue_box.center_y,
+            arcade.color.WHITE,
+            font_size=14,
+            anchor_x="center",
+            anchor_y="center",
+            multiline=True,
+            width=380
+        )
+        
         # Управление
         self.left_pressed = False
         self.right_pressed = False
@@ -258,6 +281,11 @@ class GameView(arcade.View):
         self.torch_list.draw(pixelated=True)
         self.buildings_list.draw(pixelated=True)
         self.alien_list.draw(pixelated=True)
+        
+        # Отрисовка диалогового окна
+        if hasattr(self, 'dialogue_active') and self.dialogue_active:
+            self.dialogue_sprite_list.draw()
+            self.dialogue_text_sprite.draw()
 
     def on_update(self, delta_time):
         """Обновление игровой логики"""
@@ -278,6 +306,21 @@ class GameView(arcade.View):
         # Обновление позиций
         self.alien_list.update()
         self.alien.update_animation(delta_time)
+        
+        # Проверка расстояния до Ness для диалога
+        distance_to_ness = arcade.get_distance_between_sprites(self.alien, self.ness)
+        if not hasattr(self, 'dialogue_active'):
+            self.dialogue_active = False
+            self.dialogue_text = ""
+            
+        if distance_to_ness < 150 and not self.dialogue_active:
+            self.dialogue_active = True
+            self.dialogue_text = "Посадка произошла нормально."
+            self.dialogue_text_sprite.value = self.dialogue_text
+        elif distance_to_ness >= 150 and self.dialogue_active:
+            self.dialogue_active = False
+            self.dialogue_text = ""
+            self.dialogue_text_sprite.value = self.dialogue_text
 
         # Проверка коллизии со стенами
         if arcade.check_for_collision_with_list(self.alien, self.wall_list):
