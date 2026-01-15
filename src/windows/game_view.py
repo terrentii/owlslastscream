@@ -160,7 +160,7 @@ class GameView(arcade.View):
         self.buildings_list.append(self.spaceship)
 
         # Настройка Ness
-        self.ness = arcade.Sprite('resources/persons/alien_ness/ness_no_anim.png', scale=0.22)
+        self.ness = arcade.Sprite('resources/persons/alien_ness/ness_darked.png', scale=0.22)
         # Ness
         center_x = settings.width // 2 + 50
         center_y = settings.height // 4
