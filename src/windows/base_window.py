@@ -81,8 +81,6 @@ class BaseWindow(arcade.Window):
             self.alien.center_x = settings.width
 
     def on_key_press(self, key, modifiers):
-        if key == arcade.key.Q:
-            self.close()
         # Обработка нажатий клавиш для движения
         if key == arcade.key.LEFT or key == arcade.key.A:
             self.left_pressed = True

@@ -244,8 +244,6 @@ class GameView(arcade.View):
         self.bg_list.draw(pixelated=True)
         self.wall_list.draw()
 
-
-
         self.filter_list.draw()
         self.torch_list.draw(pixelated=True)
         self.buildings_list.draw(pixelated=True)
