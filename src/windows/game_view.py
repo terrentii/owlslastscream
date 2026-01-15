@@ -9,9 +9,6 @@ class GameView(arcade.View):
         super().__init__()
         self.window = window
 
-        icon = arcade.load_texture('resources/program_needz/logo.png')
-        self.window.set_icon(icon)
-
         # Настройка фона
         bg_texture = arcade.load_texture('resources/background/forest_map.png')
         self.bg = arcade.Sprite()
