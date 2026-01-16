@@ -3,15 +3,15 @@ import math
 from src.settings import settings
 from src.animations.RunningAlien import RunningAlien
 
+
 class GameView(arcade.View):
     """Представление игрового процесса"""
+
     def __init__(self, window):
         super().__init__()
         self.window = window
         self.dialogue_active = False
         self.dialogue_text = ""
-        super().__init__()
-        self.window = window
 
         # Настройка фона
         bg_texture = arcade.load_texture('resources/background/forest_map.png')
@@ -37,7 +37,7 @@ class GameView(arcade.View):
         self.camera = arcade.camera.Camera2D()
         self.camera.use()
         self.camera.zoom = 0.75
-        
+
         # Настройка пришельца
         self.alien_list = arcade.SpriteList()
 
@@ -52,29 +52,28 @@ class GameView(arcade.View):
         center_y = settings.height // 2
         wall_texture = arcade.load_texture('resources/background/nothing.png')
         wall_width = 64
-        
+
         # Размеры карты
         map_width = 10000
         map_height = 10000
-        
+
         # Координаты границ карты
         left_edge = center_x - map_width // 2
         right_edge = center_x + map_width // 2
         bottom_edge = center_y - map_height // 2
         top_edge = center_y + map_height // 2
 
-        
         # дороги
         road_angles = [0, 120, 240]
         road_width = 800
         road_length = 6000
         safe_zone_radius = 2000
-        
+
         # по кругу
         outer_radius = 2000
         circumference = 2 * 3.14159 * outer_radius
         num_walls = int(circumference / wall_width)
-        
+
         for i in range(num_walls):
             angle = 2 * 3.14159 * i / num_walls
             angle_deg = math.degrees(angle)
@@ -88,7 +87,7 @@ class GameView(arcade.View):
                 if angle_diff < 10:  # зона пропуска
                     in_road_area = True
                     break
-            
+
             if not in_road_area:
                 wall = arcade.Sprite()
                 wall.texture = wall_texture
@@ -96,20 +95,20 @@ class GameView(arcade.View):
                 wall.center_y = center_y + outer_radius * math.sin(angle)
                 wall.angle = angle_deg + 90  # Поворачиваем стену по касательной
                 self.wall_list.append(wall)
-            
+
         # Добавляем стены вдоль дорог
         for road_angle in road_angles:
             road_angle_rad = math.radians(road_angle)
             dx = math.cos(road_angle_rad)
             dy = math.sin(road_angle_rad)
-            
+
             # вектор для размещения стен по бокам дороги
             perp_dx = -dy
             perp_dy = dx
-            
+
             # Размещаем стены вдоль дороги
             for distance in range(safe_zone_radius + 40, road_length, 64):
-                for side_offset in [-road_width//2, road_width//2]:
+                for side_offset in [-road_width // 2, road_width // 2]:
                     wall = arcade.Sprite()
                     wall.texture = wall_texture
                     wall.center_x = center_x + dx * distance + perp_dx * side_offset
@@ -119,34 +118,34 @@ class GameView(arcade.View):
 
         # Обнесем всю карту по периметру стенами (дополнительная мера)
         # Нижняя сторона
-        for x in range(left_edge + wall_width//2, right_edge, wall_width):
+        for x in range(left_edge + wall_width // 2, right_edge, wall_width):
             wall = arcade.Sprite()
             wall.texture = wall_texture
             wall.center_x = x
             wall.center_y = bottom_edge
             wall.angle = 0  # Горизонтальная ориентация
             self.wall_list.append(wall)
-        
+
         # Верхняя сторона
-        for x in range(left_edge + wall_width//2, right_edge, wall_width):
+        for x in range(left_edge + wall_width // 2, right_edge, wall_width):
             wall = arcade.Sprite()
             wall.texture = wall_texture
             wall.center_x = x
             wall.center_y = top_edge
             wall.angle = 0  # Горизонтальная ориентация
             self.wall_list.append(wall)
-            
+
         # Левая сторона
-        for y in range(bottom_edge + wall_width//2, top_edge, wall_width):
+        for y in range(bottom_edge + wall_width // 2, top_edge, wall_width):
             wall = arcade.Sprite()
             wall.texture = wall_texture
             wall.center_x = left_edge
             wall.center_y = y
             wall.angle = 90  # Вертикальная ориентация
             self.wall_list.append(wall)
-            
+
         # Правая сторона
-        for y in range(bottom_edge + wall_width//2, top_edge, wall_width):
+        for y in range(bottom_edge + wall_width // 2, top_edge, wall_width):
             wall = arcade.Sprite()
             wall.texture = wall_texture
             wall.center_x = right_edge
@@ -164,11 +163,11 @@ class GameView(arcade.View):
         self.buildings_list.append(self.spaceship)
 
         # Настройка Ness
-        self.ness = arcade.Sprite('resources/persons/alien_ness/ness_darked.png')
+        self.ness = arcade.Sprite('resources/persons/alien_ness/ness_in_spacesuit_darked.png')
         # Ness
-        ness_center_x = settings.width // 2 + 50
+        ness_center_x = settings.width // 2 + 100
         ness_center_y = settings.height // 4
-        
+
         self.ness.center_x = ness_center_x
         self.ness.center_y = ness_center_y
         self.alien_list.append(self.ness)
@@ -188,16 +187,16 @@ class GameView(arcade.View):
         torch_texture = arcade.load_texture('resources/buildings/torch.png')
         center_x = settings.width // 2
         center_y = settings.height // 2
-        
+
         # Размещаем факелы вдоль внешнего круга барьеров (радиус 2000), но гораздо реже
         outer_radius = 1300
         torch_spacing = 700
-        
+
         # Общая длина окружности
         circumference = 2 * 3.14159 * outer_radius
         # Количество факелов
         num_torches = int(circumference / torch_spacing)
-        
+
         for i in range(num_torches):
             angle = 2 * 3.14159 * i / num_torches
 
@@ -205,31 +204,30 @@ class GameView(arcade.View):
             in_road_area = False
             road_angles = [0, 120, 240]
 
-
             if not in_road_area:
                 torch = arcade.Sprite(scale=3.0)
                 torch.texture = torch_texture
                 torch.center_x = center_x + outer_radius * math.cos(angle)
                 torch.center_y = center_y + outer_radius * math.sin(angle)
                 self.torch_list.append(torch)
-        
+
         # Размещаем факелы вдоль дорог
         road_width = 800
         road_length = 6000
         safe_zone_radius = 2000
-        
+
         for road_angle in road_angles:
             road_angle_rad = math.radians(road_angle)
             dx = math.cos(road_angle_rad)
             dy = math.sin(road_angle_rad)
-            
+
             # Перпендикулярный вектор для размещения факелов по бокам дороги
             perp_dx = -dy
             perp_dy = dx
-            
+
             # Размещаем факелы вдоль дороги с большим интервалом
             for distance in range(safe_zone_radius + 200, road_length, 800):
-                for side_offset in [road_width//2 - 400, road_width//2 - 400]:
+                for side_offset in [road_width // 2 - 400, road_width // 2 - 400]:
                     torch = arcade.Sprite(scale=3.0)
                     torch.texture = torch_texture
                     torch.center_x = center_x + dx * distance + perp_dx * side_offset
@@ -239,40 +237,78 @@ class GameView(arcade.View):
         # Добавляем коллизию для spaceship
         self.spaceship.width = spaceship_texture.width * 10.0
         self.spaceship.height = spaceship_texture.height * 10.0
-        
+
         # Добавляем коллизию для Ness
-        self.ness.width = 110
-        self.ness.height = 110
-        
+        self.ness.width = 120
+        self.ness.height = 120
+
         # Настройка диалогового окна
-        self.dialogue_box = arcade.SpriteSolidColor(400, 100, arcade.color.DARK_BLUE)
-        self.dialogue_box.center_x = settings.width // 2
-        self.dialogue_box.center_y = settings.height - 50
+        # Получаем размеры экрана из настроек
+        screen_width = settings.width
+        screen_height = settings.height
+
+        # Диалоговое окно, плотно прилегающее к нижнему краю экрана
+        self.dialogue_box = arcade.SpriteSolidColor(
+            screen_width,
+            120,
+            color=(10, 9, 9, 180)
+        )
+        self.dialogue_box.center_x = screen_width // 2  # По центру по X
+        self.dialogue_box.bottom = 0  # Прижато к нижнему краю
         self.dialogue_sprite_list = arcade.SpriteList()
         self.dialogue_sprite_list.append(self.dialogue_box)
-        
+
+        # Текст диалога
         self.dialogue_text_sprite = arcade.Text(
             "",
-            self.dialogue_box.center_x,
+            self.dialogue_box.center_x + 80,
             self.dialogue_box.center_y,
-            arcade.color.WHITE,
-            font_size=14,
+            arcade.color.ASH_GREY,
+            font_size=18,
             anchor_x="center",
             anchor_y="center",
             multiline=True,
-            width=380
+            width=screen_width - 200
         )
-        
+
+        self.dialogue_speaker = arcade.Sprite('resources/persons/alien_ness/ness_in_spacesuit.png')
+        self.dialogue_speaker.scale = 3
+        self.dialogue_speaker.left = 20
+        self.dialogue_speaker.bottom = 20
+        self.dialogue_sprite_list.append(self.dialogue_speaker)
+
         # Управление
         self.left_pressed = False
         self.right_pressed = False
         self.up_pressed = False
         self.down_pressed = False
+        
+        # Настройка миникарты
+        self.minimap_width = 200
+        self.minimap_height = 200
+        
+        # Загружаем текстуру карты
+        minimap_texture = arcade.load_texture('resources/UI/map1.png')
+        self.minimap_sprite = arcade.Sprite()
+        self.minimap_sprite.texture = minimap_texture
+        self.minimap_sprite.width = self.minimap_width
+        self.minimap_sprite.height = self.minimap_height
+        
+        # Создаем спрайтлист для миникарты
+        self.minimap_sprite_list = arcade.SpriteList()
+        self.minimap_sprite_list.append(self.minimap_sprite)
+        
+        # Создаем спрайт для отображения позиции игрока на миникарте
+        self.player_dot = arcade.SpriteSolidColor(8, 8, arcade.color.RED)
+        self.player_dot.center_x = 0  # Инициализируем в центре
+        self.player_dot.center_y = 0
+        self.minimap_sprite_list.append(self.player_dot)
 
     def on_draw(self):
         """Отрисовка игрового экрана"""
         self.clear()
-        
+
+        # Отрисовка игрового мира
         self.camera.use()
         self.bg_list.draw(pixelated=True)
         self.wall_list.draw()
@@ -281,10 +317,10 @@ class GameView(arcade.View):
         self.torch_list.draw(pixelated=True)
         self.buildings_list.draw(pixelated=True)
         self.alien_list.draw(pixelated=True)
-        
+
         # Отрисовка диалогового окна
         if hasattr(self, 'dialogue_active') and self.dialogue_active:
-            self.dialogue_sprite_list.draw()
+            self.dialogue_sprite_list.draw(pixelated=True)
             self.dialogue_text_sprite.draw()
 
     def on_update(self, delta_time):
@@ -295,27 +331,27 @@ class GameView(arcade.View):
             self.alien.change_x = -settings.PLAYER_SPEED
         elif self.right_pressed and not self.left_pressed:
             self.alien.change_x = settings.PLAYER_SPEED
-            
+
         # скорость по оси Y
         self.alien.change_y = 0
         if self.up_pressed and not self.down_pressed:
             self.alien.change_y = settings.PLAYER_SPEED
         elif self.down_pressed and not self.up_pressed:
             self.alien.change_y = -settings.PLAYER_SPEED
-            
+
         # Обновление позиций
         self.alien_list.update()
         self.alien.update_animation(delta_time)
-        
+
         # Проверка расстояния до Ness для диалога
         distance_to_ness = arcade.get_distance_between_sprites(self.alien, self.ness)
         if not hasattr(self, 'dialogue_active'):
             self.dialogue_active = False
             self.dialogue_text = ""
-            
+
         if distance_to_ness < 150 and not self.dialogue_active:
             self.dialogue_active = True
-            self.dialogue_text = "Посадка произошла нормально."
+            self.dialogue_text = "Вроде приземлились... Мы немножко обустроили тут территорию, осталось подобрать маскировку."
             self.dialogue_text_sprite.value = self.dialogue_text
         elif distance_to_ness >= 150 and self.dialogue_active:
             self.dialogue_active = False
@@ -333,7 +369,7 @@ class GameView(arcade.View):
             # При столкновении возвращаем пришельца на предыдущую позицию
             self.alien.center_x -= self.alien.change_x
             self.alien.center_y -= self.alien.change_y
-            
+
         # Проверка коллизии с Ness
         if arcade.check_for_collision(self.alien, self.ness):
             # При столкновении возвращаем пришельца на предыдущую позицию
@@ -345,7 +381,7 @@ class GameView(arcade.View):
             # При столкновении возвращаем пришельца на предыдущую позицию
             self.alien.center_x -= self.alien.change_x
             self.alien.center_y -= self.alien.change_y
-            
+
         # Коллизия с факелами удалена - они декоративные элементы
         # Факелы больше не создают препятствий для движения
 
@@ -353,6 +389,36 @@ class GameView(arcade.View):
         camera_x = self.alien.center_x
         camera_y = self.alien.center_y + settings.height * 0.2  # Поднимаем камеру на половину высоты экрана
         self.camera.position = camera_x, camera_y
+
+        # Обновляем позицию диалогового окна относительно камеры
+        if hasattr(self, 'dialogue_box'):
+            # Диалоговое окно прижато к нижнему краю экрана
+            self.dialogue_box.center_x = camera_x  # Центрируем по X относительно камеры
+            self.dialogue_box.bottom = camera_y - (settings.height // 2)  # Прижато к нижнему краю
+
+            # Обновляем позицию текста
+            self.dialogue_text_sprite.position = (self.dialogue_box.center_x + 80, self.dialogue_box.center_y)
+
+            # Спрайт говорящего прижат к левому краю диалогового окна
+            self.dialogue_speaker.left = self.dialogue_box.left + 20
+            self.dialogue_speaker.bottom = self.dialogue_box.bottom + 20
+            
+        # Обновляем позицию точки игрока на миникарте
+        if hasattr(self, 'player_dot'):
+            # Масштаб карты к миникарте 48:1000
+            scale_factor = 48 / 1000
+            
+            # Позиция миникарты в левом верхнем углу
+            minimap_left = self.camera.left + 10
+            minimap_top = self.camera.top - 10
+            
+            # Вычисляем позицию игрока на миникарте с учетом масштаба
+            self.player_dot.center_x = minimap_left + self.alien.center_x * scale_factor
+            self.player_dot.center_y = minimap_top - self.alien.center_y * scale_factor
+            
+            # Обновляем позицию спрайта миникарты
+            self.minimap_sprite.center_x = minimap_left + self.minimap_width // 2
+            self.minimap_sprite.top = minimap_top
 
     def on_key_press(self, key, modifiers):
         """Обработка нажатия клавиш"""
