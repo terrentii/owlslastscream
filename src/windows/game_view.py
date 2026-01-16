@@ -12,7 +12,27 @@ class GameView(arcade.View):
         self.window = window
         self.dialogue_active = False
         self.dialogue_text = ""
-
+        
+        # Добавляем флаг паузы
+        self.paused = False
+        
+        # Создаем прямоугольник для затемнения экрана
+        self.overlay = arcade.shape_list.ShapeElementList()
+        self.overlay_rectangle = arcade.shape_list.create_rectangle_filled(
+            center_x=0, center_y=0,
+            width=settings.width * 30, height=settings.height * 30,
+            color=(0, 0, 0, 150)
+        )
+        self.overlay.append(self.overlay_rectangle)
+        
+        # Создаем текст "Пауза"
+        self.pause_text = arcade.Text(
+            "ПАУЗА",
+            x=0, y=0,
+            color=arcade.color.WHITE,
+            font_size=50,
+            anchor_x="center", anchor_y="center"
+        )
         # Настройка фона
         bg_texture = arcade.load_texture('resources/background/forest_map.png')
         self.bg = arcade.Sprite()
@@ -320,9 +340,24 @@ class GameView(arcade.View):
         # Отрисовка текста с координатами
         if hasattr(self, 'coordinates_text'):
             self.coordinates_text.draw()
+            
+        # Отрисовка экрана паузы
+        if self.paused:
+            # Устанавливаем оверлей по центру камеры
+            self.overlay_rectangle.center_x = self.camera.position.x
+            self.overlay_rectangle.center_y = self.camera.position.y
+            self.overlay.draw()
+            
+            # Позиционируем текст "Пауза" по центру экрана
+            self.pause_text.x = self.camera.position.x
+            self.pause_text.y = self.camera.position.y + 100
+            self.pause_text.draw()
 
     def on_update(self, delta_time):
         """Обновление игровой логики"""
+        if self.paused:
+            return
+
         # скорость по оси X
         self.alien.change_x = 0
         if self.left_pressed and not self.right_pressed:
@@ -444,9 +479,17 @@ class GameView(arcade.View):
 
     def on_key_press(self, key, modifiers):
         """Обработка нажатия клавиш"""
-        # if key == arcade.key.ESCAPE:
-        #     self.window.switch_view("main_menu")
-        if key == arcade.key.LEFT or key == arcade.key.A:
+        if key == arcade.key.ESCAPE:
+            # Переключаем состояние паузы
+            self.paused = not self.paused
+            
+            # При активации паузы обновляем позицию оверлея и текста
+            if self.paused:
+                self.overlay_rectangle.center_x = self.camera.position.x
+                self.overlay_rectangle.center_y = self.camera.position.y
+                self.pause_text.x = self.camera.position.x
+                self.pause_text.y = self.camera.position.y + 100
+        elif key == arcade.key.LEFT or key == arcade.key.A:
             self.left_pressed = True
         elif key == arcade.key.RIGHT or key == arcade.key.D:
             self.right_pressed = True
