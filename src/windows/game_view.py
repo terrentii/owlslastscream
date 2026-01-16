@@ -45,6 +45,18 @@ class GameView(arcade.View):
         self.alien.center_x = settings.width // 2
         self.alien.center_y = settings.height // 2
         self.alien_list.append(self.alien)
+        
+        # Инициализация стрелки над головой пришельца (создается, но пока не видна)
+        self.arrow_list = arcade.SpriteList()
+        self.arrow = arcade.Sprite('resources/UI/arrow/arrow_mini.png')
+        self.arrow.scale = 5.0
+        self.arrow.center_x = self.alien.center_x
+        self.arrow.center_y = self.alien.center_y + 400  # Над головой пришельца
+        self.arrow.alpha = 0  # Прозрачная стрелка
+        self.arrow_list.append(self.arrow)
+        
+        # Флаг для отображения стрелки
+        self.show_arrow = False
 
         # Настройка стен
         self.wall_list = arcade.SpriteList()
@@ -282,27 +294,6 @@ class GameView(arcade.View):
         self.right_pressed = False
         self.up_pressed = False
         self.down_pressed = False
-        
-        # Настройка миникарты
-        self.minimap_width = 200
-        self.minimap_height = 200
-        
-        # Загружаем текстуру карты
-        minimap_texture = arcade.load_texture('resources/UI/map1.png')
-        self.minimap_sprite = arcade.Sprite()
-        self.minimap_sprite.texture = minimap_texture
-        self.minimap_sprite.width = self.minimap_width
-        self.minimap_sprite.height = self.minimap_height
-        
-        # Создаем спрайтлист для миникарты
-        self.minimap_sprite_list = arcade.SpriteList()
-        self.minimap_sprite_list.append(self.minimap_sprite)
-        
-        # Создаем спрайт для отображения позиции игрока на миникарте
-        self.player_dot = arcade.SpriteSolidColor(8, 8, arcade.color.RED)
-        self.player_dot.center_x = 0  # Инициализируем в центре
-        self.player_dot.center_y = 0
-        self.minimap_sprite_list.append(self.player_dot)
 
     def on_draw(self):
         """Отрисовка игрового экрана"""
@@ -317,11 +308,18 @@ class GameView(arcade.View):
         self.torch_list.draw(pixelated=True)
         self.buildings_list.draw(pixelated=True)
         self.alien_list.draw(pixelated=True)
+        
+        # Отрисовка стрелки над головой пришельца
+        self.arrow_list.draw(pixelated=True)
 
         # Отрисовка диалогового окна
         if hasattr(self, 'dialogue_active') and self.dialogue_active:
             self.dialogue_sprite_list.draw(pixelated=True)
             self.dialogue_text_sprite.draw()
+
+        # Отрисовка текста с координатами
+        if hasattr(self, 'coordinates_text'):
+            self.coordinates_text.draw()
 
     def on_update(self, delta_time):
         """Обновление игровой логики"""
@@ -357,6 +355,9 @@ class GameView(arcade.View):
             self.dialogue_active = False
             self.dialogue_text = ""
             self.dialogue_text_sprite.value = self.dialogue_text
+            # После завершения диалога с Ness, показываем стрелку
+            self.show_arrow = True
+            self.arrow.alpha = 255  # Делаем стрелку видимой
 
         # Проверка коллизии со стенами
         if arcade.check_for_collision_with_list(self.alien, self.wall_list):
@@ -390,6 +391,26 @@ class GameView(arcade.View):
         camera_y = self.alien.center_y + settings.height * 0.2  # Поднимаем камеру на половину высоты экрана
         self.camera.position = camera_x, camera_y
 
+        # Настройка текста с координатами
+        if not hasattr(self, 'coordinates_text'):
+            self.coordinates_text = arcade.Text(
+                "",
+                x=0,
+                y=0,
+                color=arcade.color.WHITE,
+                font_size=24,
+                anchor_x="right",
+                anchor_y="top"
+            )
+
+        # Обновляем позицию диалогового окна относительно камеры
+        if hasattr(self, 'dialogue_box'):
+            # Обновляем текст координат
+            if hasattr(self, 'coordinates_text'):
+                self.coordinates_text.text = f"X: {int(self.alien.center_x)}, Y: {int(self.alien.center_y)}"
+                self.coordinates_text.x = camera_x + settings.width // 2 - 20  # Правый край экрана
+                self.coordinates_text.y = camera_y + settings.height // 2 - 20  # Верхний край экрана
+
         # Обновляем позицию диалогового окна относительно камеры
         if hasattr(self, 'dialogue_box'):
             # Диалоговое окно прижато к нижнему краю экрана
@@ -403,22 +424,23 @@ class GameView(arcade.View):
             self.dialogue_speaker.left = self.dialogue_box.left + 20
             self.dialogue_speaker.bottom = self.dialogue_box.bottom + 20
             
-        # Обновляем позицию точки игрока на миникарте
-        if hasattr(self, 'player_dot'):
-            # Масштаб карты к миникарте 48:1000
-            scale_factor = 48 / 1000
-            
-            # Позиция миникарты в левом верхнем углу
-            minimap_left = self.camera.left + 10
-            minimap_top = self.camera.top - 10
-            
-            # Вычисляем позицию игрока на миникарте с учетом масштаба
-            self.player_dot.center_x = minimap_left + self.alien.center_x * scale_factor
-            self.player_dot.center_y = minimap_top - self.alien.center_y * scale_factor
-            
-            # Обновляем позицию спрайта миникарты
-            self.minimap_sprite.center_x = minimap_left + self.minimap_width // 2
-            self.minimap_sprite.top = minimap_top
+        # Обновляем позицию стрелки над головой пришельца только если диалог с Ness завершен
+        if self.show_arrow:
+            self.arrow.center_x = self.alien.center_x
+            self.arrow.center_y = self.alien.center_y + 70  # Над головой пришельца
+        
+        # Обновляем направление стрелки к точке (0, 0)
+        target_x = 5580
+        target_y = 385
+        
+        # Вычисляем угол между текущей позицией пришельца и целью
+        dx = target_x - self.alien.center_x
+        dy = target_y - self.alien.center_y
+        angle = math.degrees(math.atan2(dy, dx))
+        
+        # Устанавливаем угол поворота стрелки
+        # Инвертируем ось Y, так как в arcade Y увеличивается вверх, а в математике - вниз
+        self.arrow.angle = -angle + 90
 
     def on_key_press(self, key, modifiers):
         """Обработка нажатия клавиш"""
