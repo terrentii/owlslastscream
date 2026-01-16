@@ -444,9 +444,9 @@ class GameView(arcade.View):
 
     def on_key_press(self, key, modifiers):
         """Обработка нажатия клавиш"""
-        if key == arcade.key.ESCAPE:
-            self.window.switch_view("main_menu")
-        elif key == arcade.key.LEFT or key == arcade.key.A:
+        # if key == arcade.key.ESCAPE:
+        #     self.window.switch_view("main_menu")
+        if key == arcade.key.LEFT or key == arcade.key.A:
             self.left_pressed = True
         elif key == arcade.key.RIGHT or key == arcade.key.D:
             self.right_pressed = True

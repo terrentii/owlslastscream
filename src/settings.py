@@ -8,6 +8,7 @@ class Settings:
         self.fullscreen = False  # Полноэкранный режим экрана, берется размер экрана
 
         self.title = "Owl`s last scream"
+        self.icon = "resources/program_needz/logo.png"
 
         self.reboot = False  # для перезагрузки приложения
 
