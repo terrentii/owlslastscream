@@ -47,6 +47,9 @@ class BaseWindow(arcade.Window):
             elif view_name == "game":
                 from src.windows.game_view import GameView
                 self.views[view_name] = GameView(self)
+            elif view_name == "city":
+                from src.windows.city_view import CityView
+                self.views[view_name] = CityView(self)
             elif view_name == "settings":
                 from src.windows.settings_view import SettingsView
                 self.views[view_name] = SettingsView(self)
