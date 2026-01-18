@@ -381,13 +381,8 @@ class GameView(arcade.View):
         
         # Проверка перехода в городскую локацию
         if self.alien.center_x > 5230 and 110 <= self.alien.center_y <= 420:
-            # Сохраняем позицию игрока
-            player_pos = {'x': self.alien.center_x, 'y': self.alien.center_y}
-            
-            # Переключаемся на городскую локацию
-            from src.windows.city_view import CityView
-            city_view = CityView(self.window, player_position=player_pos)
-            self.window.show_view(city_view)
+            # Переключаемся на городскую локацию с помощью switch_view
+            self.window.switch_view("city")
 
         # Проверка расстояния до Ness для диалога
         distance_to_ness = arcade.get_distance_between_sprites(self.alien, self.ness)

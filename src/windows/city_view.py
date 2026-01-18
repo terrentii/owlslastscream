@@ -11,8 +11,8 @@ class CityView(arcade.View):
         super().__init__()
         self.window = window
         
-        # Позиция игрока
-        self.player_position = player_position or {'x': settings.width // 4, 'y': settings.height // 2}
+        # Позиция игрока при входе в городскую локацию
+        self.player_position = player_position or {'x': -4000, 'y': -1000}
         
         # Добавляем флаг паузы
         self.paused = False
@@ -285,14 +285,9 @@ class CityView(arcade.View):
             self.arrow.center_y = self.alien.center_y + 70  # Над головой пришельца
         
         # Проверка выхода из городской локации (если игрок возвращается назад)
-        if self.alien.center_x < 5230 - 100 and 300 <= self.alien.center_y <= 310:  # Небольшой гандикап и проверка Y координаты
-            # Сохраняем позицию игрока для возвращения
-            player_pos = {'x': self.alien.center_x, 'y': self.alien.center_y}
-            
-            # Возвращаемся в основную локацию
-            from src.windows.game_view import GameView
-            game_view = GameView(self.window, player_position=player_pos)
-            self.window.show_view(game_view)
+        if self.alien.center_x == -4200 and self.alien.center_y == -1000:  # Проверка по X координате
+            # Возвращаемся в основную локацию с помощью switch_view
+            self.window.switch_view("game")
 
     def on_key_press(self, key, modifiers):
         """Обработка нажатия клавиш"""
