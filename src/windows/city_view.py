@@ -89,8 +89,8 @@ class CityView(arcade.View):
         wall_width = 64
 
         # Размеры карты
-        map_width = 10000
-        map_height = 10000
+        map_width = 10280
+        map_height = 5800
 
         # Координаты границ карты
         left_edge = center_x - map_width // 2
