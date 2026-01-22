@@ -158,8 +158,7 @@ class CityView(arcade.View):
             self.dialogue_box.center_y,
             arcade.color.ASH_GREY,
             font_size=18,
-            anchor_x="center",
-            anchor_y="center",
+            anchor_x="center", anchor_y="center",
             multiline=True,
             width=screen_width - 200
         )
@@ -176,6 +175,13 @@ class CityView(arcade.View):
         self.up_pressed = False
         self.down_pressed = False
 
+        # Настройка снега
+        self.snowflake_list = arcade.SpriteList()
+        self.snowflake_texture = arcade.make_soft_square_texture(5, arcade.color.WHITE, outer_alpha=128)
+        self.snowflake_spawn_chance = 0.1  # Вероятность появления снежинки каждый кадр
+        self.snowflake_speed_y = 2.0  # Скорость падения снежинок
+        self.snowflake_drift_x = -0.5  # Боковое смещение снежинок (влево)
+
     def on_draw(self):
         """Отрисовка игрового экрана"""
         self.clear()
@@ -184,7 +190,11 @@ class CityView(arcade.View):
         self.camera.use()
         self.bg_list.draw(pixelated=True)
         self.wall_list.draw()
+        
+        # Отрисовка снежинок
+        self.snowflake_list.draw()
 
+        # Фильтры (ночной свет)
         self.filter_list.draw()
         self.alien_list.draw(pixelated=True)
         
@@ -216,7 +226,10 @@ class CityView(arcade.View):
         """Обновление игровой логики"""
         if self.paused:
             return
-
+            
+        # Обновление снежинок
+        self.update_snowflakes()
+        
         # скорость по оси X
         self.alien.change_x = 0
         if self.left_pressed and not self.right_pressed:
@@ -254,8 +267,7 @@ class CityView(arcade.View):
                 y=0,
                 color=arcade.color.WHITE,
                 font_size=24,
-                anchor_x="right",
-                anchor_y="top"
+                anchor_x="right", anchor_y="top"
             )
 
         # Обновляем позицию диалогового окна относительно камеры
@@ -320,3 +332,25 @@ class CityView(arcade.View):
             self.up_pressed = False
         elif key == arcade.key.DOWN or key == arcade.key.S:
             self.down_pressed = False
+
+    def update_snowflakes(self):
+        """Обновление позиций и создание новых снежинок"""
+        # Создаем новые снежинки
+        if arcade.get_fps() > 0 and arcade.random() < self.snowflake_spawn_chance:
+            snowflake = arcade.Sprite()
+            snowflake.texture = self.snowflake_texture
+            snowflake.scale = 1.0
+            # Снежинка появляется в случайной позиции сверху экрана
+            snowflake.center_x = self.camera.position.x + arcade.randrange(-settings.width // 2, settings.width // 2)
+            snowflake.center_y = self.camera.position.y + settings.height // 2
+            self.snowflake_list.append(snowflake)
+        
+        # Обновляем позиции всех снежинок
+        for snowflake in self.snowflake_list:
+            snowflake.center_y -= self.snowflake_speed_y
+            snowflake.center_x += self.snowflake_drift_x
+        
+        # Удаляем снежинки, которые ушли за нижнюю границу экрана
+        for snowflake in self.snowflake_list:
+            if snowflake.center_y < self.camera.position.y - settings.height // 2:
+                snowflake.remove_from_sprite_lists()
