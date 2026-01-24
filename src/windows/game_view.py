@@ -2,7 +2,8 @@ import arcade
 import math
 from src.settings import settings
 from src.animations.RunningAlien import RunningAlien
-
+import random
+import math
 
 class GameView(arcade.View):
     """Представление игрового процесса"""
@@ -36,6 +37,20 @@ class GameView(arcade.View):
             font_size=50,
             anchor_x="center", anchor_y="center"
         )
+        
+        # --- НОВАЯ НАСТРОЙКА СНЕГА ---
+        self.snowflake_list = arcade.SpriteList()
+        self.snowflake_spawn_chance = 0.2  # Увеличена вероятность спавна снежинки за кадр
+        self.snowflake_speed_min = 1.5  # Увеличена минимальная скорость падения
+        self.snowflake_speed_max = 4.0  # Увеличена максимальная скорость падения
+        self.snowflake_drift_min = -5.0  # Увеличен дрейф влево
+        self.snowflake_drift_max = 0.7  # Увеличен дрейф вправо
+        self.snowflake_wobble_speed = 0.03  # Увеличена скорость покачивания
+        self.snowflake_wobble_amount = 2.0  # Увеличена амплитуда покачивания
+
+        # Создаём текстуру более белой и мягкой снежинки 8x8 пикселей
+        self.snowflake_texture = arcade.make_soft_square_texture(8, arcade.color.WHITE_SMOKE, 255)
+        
         # Настройка фона
         bg_texture = arcade.load_texture('resources/background/forest_map.png')
         self.bg = arcade.Sprite()
@@ -334,6 +349,9 @@ class GameView(arcade.View):
         
         # Отрисовка стрелки над головой пришельца
         self.arrow_list.draw(pixelated=True)
+        
+        # Отрисовка снежинок
+        self.snowflake_list.draw()
 
         # Отрисовка диалогового окна
         if hasattr(self, 'dialogue_active') and self.dialogue_active:
@@ -360,6 +378,9 @@ class GameView(arcade.View):
         """Обновление игровой логики"""
         if self.paused:
             return
+            
+        # Обновление снежинок
+        self.update_snowflakes()
 
         # скорость по оси X
         self.alien.change_x = 0
@@ -516,3 +537,46 @@ class GameView(arcade.View):
             self.up_pressed = False
         elif key == arcade.key.DOWN or key == arcade.key.S:
             self.down_pressed = False
+
+    def update_snowflakes(self):
+        """Обновление снежинок: создание, движение и удаление"""
+        # Спавн новых снежинок — только в пределах видимой области камеры
+        if random.random() < self.snowflake_spawn_chance:
+            snowflake = arcade.Sprite()
+            snowflake.texture = self.snowflake_texture
+
+            # Случайный размер: от 0.5 до 1.5
+            size = random.uniform(0.5, 1.5)
+            snowflake.scale = size
+
+            # Начальная позиция — сверху экрана, с учётом камеры
+            snowflake.center_x = random.uniform(
+                self.camera.position.x - self.window.width // 2 - 500,
+                self.camera.position.x + self.window.width // 2 + 500
+            )
+            snowflake.center_y = self.camera.position.y + self.window.height // 2 + 50
+
+            # Случайная скорость падения и дрейф
+            snowflake.speed = random.uniform(self.snowflake_speed_min, self.snowflake_speed_max)
+            snowflake.drift = random.uniform(self.snowflake_drift_min, self.snowflake_drift_max)
+
+            # Покачивание: сохраняем начальный X как базу
+            snowflake.base_x = snowflake.center_x
+            snowflake.wobble_offset = 0.0
+
+            self.snowflake_list.append(snowflake)
+
+        # Обновляем каждую снежинку
+        for snowflake in self.snowflake_list:
+            # Падение вниз
+            snowflake.center_y -= snowflake.speed
+            # Дрейф влево/вправо
+            snowflake.center_x += snowflake.drift
+            # Покачивание (лёгкое движение из стороны в сторону)
+            snowflake.wobble_offset += self.snowflake_wobble_speed
+            # Используем только численные значения без дополнительных операций
+            snowflake.center_x = snowflake.base_x + math.sin(snowflake.wobble_offset) * 0.8
+
+            # Удаляем, если ушла за нижнюю границу
+            if snowflake.center_y < self.camera.position.y - self.window.height // 2 - 500:
+                snowflake.remove_from_sprite_lists()
