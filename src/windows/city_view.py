@@ -169,16 +169,16 @@ class CityView(arcade.View):
 
         # --- НОВАЯ НАСТРОЙКА СНЕГА ---
         self.snowflake_list = arcade.SpriteList()
-        self.snowflake_spawn_chance = 0.1  # Вероятность спавна снежинки за кадр
-        self.snowflake_speed_min = 1.0
-        self.snowflake_speed_max = 3.0
-        self.snowflake_drift_min = -0.8
-        self.snowflake_drift_max = 0.2  # Дрейф влево (преимущественно)
-        self.snowflake_wobble_speed = 0.02  # Скорость покачивания
-        self.snowflake_wobble_amount = 0.5  # Амплитуда покачивания
+        self.snowflake_spawn_chance = 0.2  # Увеличена вероятность спавна снежинки за кадр
+        self.snowflake_speed_min = 1.5  # Увеличена минимальная скорость падения
+        self.snowflake_speed_max = 4.0  # Увеличена максимальная скорость падения
+        self.snowflake_drift_min = -5.0  # Увеличен дрейф влево
+        self.snowflake_drift_max = 0.7  # Увеличен дрейф вправо
+        self.snowflake_wobble_speed = 0.03  # Увеличена скорость покачивания
+        self.snowflake_wobble_amount = 0.8  # Увеличена амплитуда покачивания
 
-        # Создаём текстуру мягкой снежинки 6x6 пикселей
-        self.snowflake_texture = arcade.make_soft_square_texture(6, arcade.color.WHITE, outer_alpha=180)
+        # Создаём текстуру более белой и мягкой снежинки 8x8 пикселей
+        self.snowflake_texture = arcade.make_soft_square_texture(8, arcade.color.WHITE_SMOKE, 255)
 
     def update_snowflakes(self):
         """Обновление снежинок: создание, движение и удаление"""
@@ -217,7 +217,7 @@ class CityView(arcade.View):
             # Покачивание (лёгкое движение из стороны в сторону)
             snowflake.wobble_offset += self.snowflake_wobble_speed
             # Используем только численные значения без дополнительных операций
-            snowflake.center_x = snowflake.base_x + math.sin(snowflake.wobble_offset) * 0.5
+            snowflake.center_x = snowflake.base_x + math.sin(snowflake.wobble_offset) * 0.8
 
             # Удаляем, если ушла за нижнюю границу
             if snowflake.center_y < self.camera.position.y - self.window.height // 2:
@@ -233,12 +233,14 @@ class CityView(arcade.View):
         self.wall_list.draw()
 
         # Отрисовка снежинок
-        self.snowflake_list.draw()
+
 
         # Фильтры (ночной свет)
         self.filter_list.draw()
         self.alien_list.draw(pixelated=True)
         self.arrow_list.draw(pixelated=True)
+
+        self.snowflake_list.draw()
 
         # Отрисовка диалогового окна
         if hasattr(self, 'dialogue_active') and self.dialogue_active:
@@ -511,7 +513,7 @@ class CityView(arcade.View):
             # Покачивание (лёгкое движение из стороны в сторону)
             snowflake.wobble_offset += self.snowflake_wobble_speed
             # Используем только численные значения без дополнительных операций
-            snowflake.center_x = snowflake.base_x + math.sin(snowflake.wobble_offset) * 0.5
+            snowflake.center_x = snowflake.base_x + math.sin(snowflake.wobble_offset) * 0.8
 
             # Удаляем, если ушла за нижнюю границу
             if snowflake.center_y < self.camera.position.y - self.window.height // 2:
