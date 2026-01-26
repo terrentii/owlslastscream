@@ -21,29 +21,36 @@ class MainMenuView(arcade.View):
         self.settings_text = None    # НОВОЕ: текст настроек
         self.button_width = 0
         self.button_height = 0
-        self.button_spacing = 0      # НОВОЕ: расстояние между кнопками
-        
-        # --- НОВАЯ НАСТРОЙКА СНЕГА ---
-        self.snowflake_list = arcade.SpriteList()
-        self.snowflake_spawn_chance = 0.2  # Увеличена вероятность спавна снежинки за кадр
-        self.snowflake_speed_min = 1.5  # Увеличена минимальная скорость падения
-        self.snowflake_speed_max = 4.0  # Увеличена максимальная скорость падения
-        self.snowflake_drift_min = -5.0  # Увеличен дрейф влево
-        self.snowflake_drift_max = 0.7  # Увеличен дрейф вправо
-        self.snowflake_wobble_speed = 0.03  # Увеличена скорость покачивания
-        self.snowflake_wobble_amount = 0.8  # Увеличена амплитуда покачивания
+        self.button_spacing = 0
 
-        # Создаём текстуру более белой и мягкой снежинки 8x8 пикселей
+        # Снежинки
+        self.snowflake_list = arcade.SpriteList()
+        self.snowflake_spawn_chance = 0.2
+        self.snowflake_speed_min = 1.5
+        self.snowflake_speed_max = 4.0
+        self.snowflake_drift_min = -5.0
+        self.snowflake_drift_max = 0.7
+        self.snowflake_wobble_speed = 0.03
+        self.snowflake_wobble_amount = 0.8
         self.snowflake_texture = arcade.make_soft_square_texture(8, arcade.color.WHITE_SMOKE, 255)
+
+        # Сова
+        self.owl_list = arcade.SpriteList()
+        self.owl_sprite = arcade.Sprite()
+        self.owl_sprite.texture = arcade.load_texture("resources/UI/loading_screen/front_with_owl.png")
+        self.owl_sprite.scale = 0.15
+        self.owl_sprite.center_x = self.window.width // 2
+        self.owl_sprite.center_y = self.window.height * 0.7
+        self.owl_list.append(self.owl_sprite)
         
     def on_show_view(self):
         self.create_menu()
 
     def on_draw(self):
-        """Рисование"""
         self.clear()
-        
-        # Отрисовка снежинок
+
+        self.owl_list.draw()
+
         self.snowflake_list.draw()
         
         # Отрисовка элементов меню
@@ -68,6 +75,10 @@ class MainMenuView(arcade.View):
     def on_resize(self, width: float, height: float):
         """Обработка изменения размера окна"""
         super().on_resize(width, height)
+        # Обновляем позицию совы при изменении размера окна
+        if hasattr(self, 'owl_sprite') and self.owl_sprite is not None:
+            self.owl_sprite.center_x = self.window.width // 2
+            self.owl_sprite.center_y = self.window.height * 0.7
         self.create_menu()
 
     def create_menu(self):

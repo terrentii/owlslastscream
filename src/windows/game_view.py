@@ -554,7 +554,7 @@ class GameView(arcade.View):
                 self.camera.position.x - self.window.width // 2 - 500,
                 self.camera.position.x + self.window.width // 2 + 500
             )
-            snowflake.center_y = self.camera.position.y + self.window.height // 2 + 50
+            snowflake.center_y = self.camera.position.y + self.window.height // 2 + 500
 
             # Случайная скорость падения и дрейф
             snowflake.speed = random.uniform(self.snowflake_speed_min, self.snowflake_speed_max)

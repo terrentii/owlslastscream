@@ -5,6 +5,8 @@ import random
 import math
 
 
+
+
 class StartView(arcade.View):
     """Стартовый экран с таймером перехода в главное меню"""
     def __init__(self, window):
@@ -15,6 +17,12 @@ class StartView(arcade.View):
         self.shape_list = arcade.shape_list.ShapeElementList()
         self.name_game = None
         self.rect_outline = None
+        self.owl_sprite = None
+        self.owl_scale = 10.0  # Начальный размер совы
+        
+        # --- НОВАЯ НАСТРОЙКА СНЕГА ---
+        self.snowflake_list = arcade.SpriteList()
+        self.owl_list = arcade.SpriteList()  # Список для спрайта совы
         
         # --- НОВАЯ НАСТРОЙКА СНЕГА ---
         self.snowflake_list = arcade.SpriteList()
@@ -31,6 +39,14 @@ class StartView(arcade.View):
 
     def setup(self):
         self.create_text()
+        # Загрузка спрайта совы
+        self.owl_sprite = arcade.Sprite("resources/UI/loading_screen/front_with_owl.png")
+        self.owl_sprite.scale = self.owl_scale
+        self.owl_sprite.center_x = self.window.width // 2
+        self.owl_sprite.center_y = self.window.height // 2
+        # Добавляем спрайт совы в SpriteList
+        self.owl_list.clear()
+        self.owl_list.append(self.owl_sprite)
 
     def on_show_view(self):
         self.setup()
@@ -42,6 +58,10 @@ class StartView(arcade.View):
         # Отрисовка снежинок
         self.snowflake_list.draw()
         
+        # Отрисовка совы, если она загружена
+        if hasattr(self, 'owl_list') and self.owl_list is not None:
+            self.owl_list.draw(pixelated=True)
+            
         # Отрисовка элементов старта
         self.batch.draw()
         self.shape_list.draw()
@@ -52,7 +72,13 @@ class StartView(arcade.View):
         
         self.timer += delta_time
 
-        # Переход на главное меню через 5 секунд
+        # Обновление позиции совы
+        if self.owl_sprite is not None:
+            # Сову размещаем в верхней части экрана
+            self.owl_sprite.center_x = self.window.width // 2
+            self.owl_sprite.center_y = self.window.height * 0.7  # 70% от высоты экрана
+
+        # Переход на главное меню через 3 секунды
         if self.timer >= 3.0:
             self.window.switch_view("main_menu")
 
