@@ -17,8 +17,8 @@ class MainMenuView(arcade.View):
         self.play_text = None
         self.button_width = 0
         self.button_height = 0
-        self.settings_button = None  # НОВОЕ: кнопка настроек
-        self.settings_text = None    # НОВОЕ: текст настроек
+        self.settings_button = None
+        self.settings_text = None
         self.button_width = 0
         self.button_height = 0
         self.button_spacing = 0
@@ -38,9 +38,9 @@ class MainMenuView(arcade.View):
         self.owl_list = arcade.SpriteList()
         self.owl_sprite = arcade.Sprite()
         self.owl_sprite.texture = arcade.load_texture("resources/UI/loading_screen/front_with_owl.png")
-        self.owl_sprite.scale = 0.15
+        self.owl_sprite.scale = 10.0
         self.owl_sprite.center_x = self.window.width // 2
-        self.owl_sprite.center_y = self.window.height * 0.7
+        self.owl_sprite.center_y = self.window.height // 2
         self.owl_list.append(self.owl_sprite)
         
     def on_show_view(self):
@@ -49,7 +49,7 @@ class MainMenuView(arcade.View):
     def on_draw(self):
         self.clear()
 
-        self.owl_list.draw()
+        self.owl_list.draw(pixelated=True)
 
         self.snowflake_list.draw()
         
@@ -58,7 +58,6 @@ class MainMenuView(arcade.View):
         self.batch.draw()
 
     def on_update(self, delta_time):
-        # Обновление снежинок
         self.update_snowflakes()
 
     def on_key_press(self, key, modifiers):
@@ -75,10 +74,9 @@ class MainMenuView(arcade.View):
     def on_resize(self, width: float, height: float):
         """Обработка изменения размера окна"""
         super().on_resize(width, height)
-        # Обновляем позицию совы при изменении размера окна
         if hasattr(self, 'owl_sprite') and self.owl_sprite is not None:
             self.owl_sprite.center_x = self.window.width // 2
-            self.owl_sprite.center_y = self.window.height * 0.7
+            self.owl_sprite.center_y = self.window.height // 2
         self.create_menu()
 
     def create_menu(self):
@@ -95,7 +93,6 @@ class MainMenuView(arcade.View):
         title_font_size = int(24 * (self.window.width / base_width))
         button_font_size = int(20 * (self.window.width / base_width))
 
-        # === Заголовок ===
         self.title_text = arcade.Text(
             "Главное меню",
             center_x,
@@ -148,7 +145,7 @@ class MainMenuView(arcade.View):
         )
         self.shape_list.append(self.play_button)
 
-        # === Кнопка "Настройки" ===
+        # Настройки
         settings_y = button_y - self.button_spacing  # Ниже кнопки "Играть"
 
         self.settings_text = arcade.Text(

@@ -39,14 +39,7 @@ class StartView(arcade.View):
 
     def setup(self):
         self.create_text()
-        # Загрузка спрайта совы
-        self.owl_sprite = arcade.Sprite("resources/UI/loading_screen/front_with_owl.png")
-        self.owl_sprite.scale = self.owl_scale
-        self.owl_sprite.center_x = self.window.width // 2
-        self.owl_sprite.center_y = self.window.height // 2
-        # Добавляем спрайт совы в SpriteList
-        self.owl_list.clear()
-        self.owl_list.append(self.owl_sprite)
+
 
     def on_show_view(self):
         self.setup()
@@ -57,10 +50,6 @@ class StartView(arcade.View):
         
         # Отрисовка снежинок
         self.snowflake_list.draw()
-        
-        # Отрисовка совы, если она загружена
-        if hasattr(self, 'owl_list') and self.owl_list is not None:
-            self.owl_list.draw(pixelated=True)
             
         # Отрисовка элементов старта
         self.batch.draw()
@@ -72,13 +61,6 @@ class StartView(arcade.View):
         
         self.timer += delta_time
 
-        # Обновление позиции совы
-        if self.owl_sprite is not None:
-            # Сову размещаем в верхней части экрана
-            self.owl_sprite.center_x = self.window.width // 2
-            self.owl_sprite.center_y = self.window.height * 0.7  # 70% от высоты экрана
-
-        # Переход на главное меню через 3 секунды
         if self.timer >= 3.0:
             self.window.switch_view("main_menu")
 
@@ -93,7 +75,6 @@ class StartView(arcade.View):
 
     def update_snowflakes(self):
         """Обновление снежинок: создание, движение и удаление"""
-        # Спавн новых снежинок — только в пределах видимой области камеры
         if random.random() < self.snowflake_spawn_chance:
             snowflake = arcade.Sprite()
             snowflake.texture = self.snowflake_texture
