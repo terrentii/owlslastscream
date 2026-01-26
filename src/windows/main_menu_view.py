@@ -42,18 +42,22 @@ class MainMenuView(arcade.View):
         self.owl_sprite.center_x = self.window.width // 2
         self.owl_sprite.center_y = self.window.height // 2
         self.owl_list.append(self.owl_sprite)
+
+        self.bg_color = arcade.color.BLACK
+        self.button_color = arcade.color.DARK_SLATE_GRAY
+        self.button_hover_color = arcade.color.SLATE_GRAY
+        self.button_outline_color = arcade.color.DARK_BLUE
+        self.text_color = arcade.color.OLD_LACE
+        self.title_color = arcade.color.GO_GREEN
         
     def on_show_view(self):
         self.create_menu()
 
     def on_draw(self):
-        self.clear()
-
+        self.clear(self.bg_color)
+        self.snowflake_list.draw()
         self.owl_list.draw(pixelated=True)
 
-        self.snowflake_list.draw()
-        
-        # Отрисовка элементов меню
         self.shape_list.draw()
         self.batch.draw()
 
@@ -84,9 +88,13 @@ class MainMenuView(arcade.View):
         self.batch = Batch()
         self.shape_list.clear()
 
-        center_x = self.window.width // 2
-        title_y = self.window.height // 1.2
-        button_y = self.window.height // 2
+        # Позиционирование в левой нижней четверти
+        menu_x = self.window.width * 0.25
+        menu_base_y = self.window.height * 0.25  # Базовая Y-координата для кнопок
+        button_rise = 100  # Поднятие кнопки "Играть" на 100 пикселей вверх
+        
+        # Позиция заголовка остается вверху
+        title_y = self.window.height * 0.85
         base_width = settings.width_min
 
         # Размеры шрифтов
@@ -94,10 +102,10 @@ class MainMenuView(arcade.View):
         button_font_size = int(20 * (self.window.width / base_width))
 
         self.title_text = arcade.Text(
-            "Главное меню",
-            center_x,
-            title_y,
-            arcade.color.RED,
+            "Начальное меню",
+            self.window.width // 1.5,
+            title_y + 20,
+            self.title_color,
             title_font_size,
             bold=True,
             align="center",
@@ -106,25 +114,37 @@ class MainMenuView(arcade.View):
             batch=self.batch
         )
 
-        # Рамка вокруг заголовка
-        title_rect_width = self.title_text.content_width + int(min(self.window.width, self.window.height) * 0.05)
-        title_rect_height = self.title_text.content_height + int(min(self.window.width, self.window.height) * 0.05)
+        # Рамка вокруг заголовка изо льда
+        title_rect_width = self.title_text.content_width + int(min(self.window.width, self.window.height) * 0.1)
+        title_rect_height = self.title_text.content_height + int(min(self.window.width, self.window.height) * 0.1)
         title_rect = arcade.shape_list.create_rectangle_outline(
-            center_x=center_x,
-            center_y=title_y,
+            center_x=self.window.width // 1.5,
+            center_y=title_y + 20,
             width=title_rect_width,
             height=title_rect_height,
-            color=arcade.color.RED,
-            border_width=2
+            color=self.title_color,
+            border_width=4
         )
         self.shape_list.append(title_rect)
+        
+        # Внутренняя рамка заголовка
+        title_inner_rect = arcade.shape_list.create_rectangle_outline(
+            center_x=self.window.width // 1.5,
+            center_y=title_y + 20,
+            width=title_rect_width - 8,
+            height=title_rect_height - 8,
+            color=arcade.color.LIGHT_BLUE,
+            border_width=2
+        )
+        self.shape_list.append(title_inner_rect)
 
         # === Кнопка "Играть" ===
+        button_center_y = menu_base_y + self.button_height + button_rise
         self.play_text = arcade.Text(
             "Играть",
-            center_x,
-            button_y,
-            arcade.color.WHITE,
+            menu_x,
+            button_center_y,
+            self.text_color,
             button_font_size,
             bold=True,
             align="center",
@@ -132,27 +152,38 @@ class MainMenuView(arcade.View):
             anchor_y="center",
             batch=self.batch
         )
-        self.button_width = self.play_text.content_width * 1.6
-        self.button_height = self.play_text.content_height * 1.6
-        self.button_spacing = self.button_height * 1.5  # Расстояние между кнопками
+        self.button_width = self.play_text.content_width * 2.0  # Шире кнопки
+        self.button_height = self.play_text.content_height * 2.0
 
+        # Заливка кнопки
         self.play_button = arcade.shape_list.create_rectangle_filled(
-            center_x=center_x,
-            center_y=button_y,
+            center_x=menu_x,
+            center_y=button_center_y,
             width=self.button_width,
             height=self.button_height,
-            color=arcade.color.GREEN
+            color=self.button_color
         )
         self.shape_list.append(self.play_button)
+        
+        # Обводка кнопки
+        self.play_button_outline = arcade.shape_list.create_rectangle_outline(
+            center_x=menu_x,
+            center_y=button_center_y,
+            width=self.button_width + 4,
+            height=self.button_height + 4,
+            color=self.button_outline_color,
+            border_width=3
+        )
+        self.shape_list.append(self.play_button_outline)
 
         # Настройки
-        settings_y = button_y - self.button_spacing  # Ниже кнопки "Играть"
+        settings_y = menu_base_y - 20  # Небольшой зазор в 20 пикселей между кнопками
 
         self.settings_text = arcade.Text(
             "Настройки",
-            center_x,
+            menu_x,
             settings_y,
-            arcade.color.WHITE,
+            self.text_color,
             button_font_size,
             bold=True,
             align="center",
@@ -161,28 +192,43 @@ class MainMenuView(arcade.View):
             batch=self.batch
         )
 
+        # Заливка кнопки настроек
         self.settings_button = arcade.shape_list.create_rectangle_filled(
-            center_x=center_x,
+            center_x=menu_x,
             center_y=settings_y,
             width=self.button_width,
             height=self.button_height,
-            color=arcade.color.GREEN
+            color=self.button_color
         )
         self.shape_list.append(self.settings_button)
+        
+        # Обводка кнопки настроек
+        self.settings_button_outline = arcade.shape_list.create_rectangle_outline(
+            center_x=menu_x,
+            center_y=settings_y,
+            width=self.button_width + 4,
+            height=self.button_height + 4,
+            color=self.button_outline_color,
+            border_width=3
+        )
+        self.shape_list.append(self.settings_button_outline)
 
     def check_button_click(self, x, y):
         """Проверка нажатия на кнопку"""
-        center_x = self.window.width // 2
-        button_y = self.window.height // 2
-        settings_y = button_y - self.button_spacing
+        # Позиции кнопок в левой нижней четверти
+        menu_x = self.window.width * 0.25
+        menu_base_y = self.window.height * 0.25
+        button_rise = 40  # Поднятие кнопки "Играть" на 40 пикселей вверх
+        button_center_y = menu_base_y + self.button_height + button_rise
+        settings_y = menu_base_y - 20  # Обновляем позицию для проверки кликов с учетом зазора
 
         # Кнопка "Играть"
-        if (center_x - self.button_width / 2 < x < center_x + self.button_width / 2 and 
-            button_y - self.button_height / 2 < y < button_y + self.button_height / 2):
+        if (menu_x - self.button_width / 2 < x < menu_x + self.button_width / 2 and 
+            button_center_y - self.button_height / 2 < y < button_center_y + self.button_height / 2):
             self.start_game()
 
         # Кнопка "Настройки"
-        elif (center_x - self.button_width / 2 < x < center_x + self.button_width / 2 and 
+        elif (menu_x - self.button_width / 2 < x < menu_x + self.button_width / 2 and 
             settings_y - self.button_height / 2 < y < settings_y + self.button_height / 2):
             self.window.switch_view("settings")
 
