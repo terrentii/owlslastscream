@@ -402,7 +402,6 @@ class GameView(arcade.View):
         
         # Проверка перехода в городскую локацию
         if self.alien.center_x > 5230 and 110 <= self.alien.center_y <= 420:
-            # Переключаемся на городскую локацию с помощью switch_view
             self.window.switch_view("city")
 
         # Проверка расстояния до Ness для диалога
@@ -419,43 +418,30 @@ class GameView(arcade.View):
             self.dialogue_active = False
             self.dialogue_text = ""
             self.dialogue_text_sprite.value = self.dialogue_text
-            # После завершения диалога с Ness, показываем стрелку
             self.show_arrow = True
-            self.arrow.alpha = 255  # Делаем стрелку видимой
+            self.arrow.alpha = 255
 
-        # Проверка коллизии со стенами
         if arcade.check_for_collision_with_list(self.alien, self.wall_list):
-            # При столкновении возвращаем пришельца на предыдущую позицию
             self.alien.center_x -= self.alien.change_x
             self.alien.center_y -= self.alien.change_y
 
         # Проверка коллизии с spaceship
         if arcade.check_for_collision_with_list(self.alien, self.buildings_list):
-            # При столкновении возвращаем пришельца на предыдущую позицию
             self.alien.center_x -= self.alien.change_x
             self.alien.center_y -= self.alien.change_y
 
         # Проверка коллизии с Ness
         if arcade.check_for_collision(self.alien, self.ness):
-            # При столкновении возвращаем пришельца на предыдущую позицию
             self.alien.center_x -= self.alien.change_x
             self.alien.center_y -= self.alien.change_y
 
-        # Проверка коллизии с sor
         if arcade.check_for_collision(self.alien, self.sor):
-            # При столкновении возвращаем пришельца на предыдущую позицию
             self.alien.center_x -= self.alien.change_x
             self.alien.center_y -= self.alien.change_y
-
-        # Коллизия с факелами удалена - они декоративные элементы
-        # Факелы больше не создают препятствий для движения
-
-        # Позиция камеры с небольшим смещением вверх
         camera_x = self.alien.center_x
-        camera_y = self.alien.center_y + settings.height * 0.2  # Поднимаем камеру на половину высоты экрана
+        camera_y = self.alien.center_y + settings.height * 0.2
         self.camera.position = camera_x, camera_y
 
-        # Настройка текста с координатами
         if not hasattr(self, 'coordinates_text'):
             self.coordinates_text = arcade.Text(
                 "",
@@ -467,43 +453,34 @@ class GameView(arcade.View):
                 anchor_y="top"
             )
 
-        # Обновляем позицию диалогового окна относительно камеры
         if hasattr(self, 'dialogue_box'):
-            # Обновляем текст координат
             if hasattr(self, 'coordinates_text'):
                 self.coordinates_text.text = f"X: {int(self.alien.center_x)}, Y: {int(self.alien.center_y)}"
-                self.coordinates_text.x = camera_x + settings.width // 2 - 20  # Правый край экрана
-                self.coordinates_text.y = camera_y + settings.height // 2 - 20  # Верхний край экрана
+                self.coordinates_text.x = camera_x + settings.width // 2 - 20
+                self.coordinates_text.y = camera_y + settings.height // 2 - 20
 
-        # Обновляем позицию диалогового окна относительно камеры
         if hasattr(self, 'dialogue_box'):
-            # Диалоговое окно прижато к нижнему краю экрана
-            self.dialogue_box.center_x = camera_x  # Центрируем по X относительно камеры
-            self.dialogue_box.bottom = camera_y - (settings.height // 2)  # Прижато к нижнему краю
+            self.dialogue_box.center_x = camera_x
+            self.dialogue_box.bottom = camera_y - (settings.height // 2)
 
-            # Обновляем позицию текста
             self.dialogue_text_sprite.position = (self.dialogue_box.center_x + 80, self.dialogue_box.center_y)
 
-            # Спрайт говорящего прижат к левому краю диалогового окна
             self.dialogue_speaker.left = self.dialogue_box.left + 20
             self.dialogue_speaker.bottom = self.dialogue_box.bottom + 20
             
-        # Обновляем позицию стрелки над головой пришельца только если диалог с Ness завершен
+        # обновляем позицию стрелки над головой пришельца
         if self.show_arrow:
             self.arrow.center_x = self.alien.center_x
-            self.arrow.center_y = self.alien.center_y + 70  # Над головой пришельца
-        
-        # Обновляем направление стрелки к точке (0, 0)
+            self.arrow.center_y = self.alien.center_y + 70
+
         target_x = 5580
         target_y = 385
         
-        # Вычисляем угол между текущей позицией пришельца и целью
+        # угол между текущей позицией пришельца и целью
         dx = target_x - self.alien.center_x
         dy = target_y - self.alien.center_y
         angle = math.degrees(math.atan2(dy, dx))
-        
-        # Устанавливаем угол поворота стрелки
-        # Инвертируем ось Y, так как в arcade Y увеличивается вверх, а в математике - вниз
+
         self.arrow.angle = -angle + 90
 
     def on_key_press(self, key, modifiers):
@@ -539,44 +516,31 @@ class GameView(arcade.View):
             self.down_pressed = False
 
     def update_snowflakes(self):
-        """Обновление снежинок: создание, движение и удаление"""
-        # Спавн новых снежинок — только в пределах видимой области камеры
         if random.random() < self.snowflake_spawn_chance:
             snowflake = arcade.Sprite()
             snowflake.texture = self.snowflake_texture
 
-            # Случайный размер: от 0.5 до 1.5
             size = random.uniform(0.5, 1.5)
             snowflake.scale = size
 
-            # Начальная позиция — сверху экрана, с учётом камеры
             snowflake.center_x = random.uniform(
                 self.camera.position.x - self.window.width // 2 - 500,
                 self.camera.position.x + self.window.width // 2 + 500
             )
             snowflake.center_y = self.camera.position.y + self.window.height // 2 + 500
 
-            # Случайная скорость падения и дрейф
             snowflake.speed = random.uniform(self.snowflake_speed_min, self.snowflake_speed_max)
             snowflake.drift = random.uniform(self.snowflake_drift_min, self.snowflake_drift_max)
 
-            # Покачивание: сохраняем начальный X как базу
             snowflake.base_x = snowflake.center_x
             snowflake.wobble_offset = 0.0
 
             self.snowflake_list.append(snowflake)
 
-        # Обновляем каждую снежинку
         for snowflake in self.snowflake_list:
-            # Падение вниз
             snowflake.center_y -= snowflake.speed
-            # Дрейф влево/вправо
             snowflake.center_x += snowflake.drift
-            # Покачивание (лёгкое движение из стороны в сторону)
             snowflake.wobble_offset += self.snowflake_wobble_speed
-            # Используем только численные значения без дополнительных операций
             snowflake.center_x = snowflake.base_x + math.sin(snowflake.wobble_offset) * 0.8
-
-            # Удаляем, если ушла за нижнюю границу
             if snowflake.center_y < self.camera.position.y - self.window.height // 2 - 500:
                 snowflake.remove_from_sprite_lists()

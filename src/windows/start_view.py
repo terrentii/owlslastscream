@@ -11,30 +11,27 @@ class StartView(arcade.View):
     """Стартовый экран с таймером перехода в главное меню"""
     def __init__(self, window):
         super().__init__()
-        self.window = window  # Ссылка на главное окно
+        self.window = window
         self.timer = 0.0
         self.batch = Batch()
         self.shape_list = arcade.shape_list.ShapeElementList()
         self.name_game = None
         self.rect_outline = None
         self.owl_sprite = None
-        self.owl_scale = 10.0  # Начальный размер совы
-        
-        # --- НОВАЯ НАСТРОЙКА СНЕГА ---
+        self.owl_scale = 10.0
+
         self.snowflake_list = arcade.SpriteList()
         self.owl_list = arcade.SpriteList()  # Список для спрайта совы
-        
-        # --- НОВАЯ НАСТРОЙКА СНЕГА ---
-        self.snowflake_list = arcade.SpriteList()
-        self.snowflake_spawn_chance = 0.2  # Увеличена вероятность спавна снежинки за кадр
-        self.snowflake_speed_min = 1.5  # Увеличена минимальная скорость падения
-        self.snowflake_speed_max = 4.0  # Увеличена максимальная скорость падения
-        self.snowflake_drift_min = -5.0  # Увеличен дрейф влево
-        self.snowflake_drift_max = 0.7  # Увеличен дрейф вправо
-        self.snowflake_wobble_speed = 0.03  # Увеличена скорость покачивания
-        self.snowflake_wobble_amount = 0.8  # Увеличена амплитуда покачивания
 
-        # Создаём текстуру более белой и мягкой снежинки 8x8 пикселей
+        self.snowflake_list = arcade.SpriteList()
+        self.snowflake_spawn_chance = 0.2
+        self.snowflake_speed_min = 1.5
+        self.snowflake_speed_max = 4.0
+        self.snowflake_drift_min = -5.0
+        self.snowflake_drift_max = 0.7
+        self.snowflake_wobble_speed = 0.03
+        self.snowflake_wobble_amount = 0.8
+
         self.snowflake_texture = arcade.make_soft_square_texture(8, arcade.color.WHITE_SMOKE, 255)
 
     def setup(self):
@@ -56,7 +53,6 @@ class StartView(arcade.View):
         self.shape_list.draw()
 
     def on_update(self, delta_time):
-        # Обновление снежинок
         self.update_snowflakes()
         
         self.timer += delta_time
@@ -79,36 +75,26 @@ class StartView(arcade.View):
             snowflake = arcade.Sprite()
             snowflake.texture = self.snowflake_texture
 
-            # Случайный размер: от 0.5 до 1.5
             size = random.uniform(0.5, 1.5)
             snowflake.scale = size
 
-            # Начальная позиция — сверху экрана
             snowflake.center_x = random.uniform(0, self.window.width)
             snowflake.center_y = self.window.height + 20
 
-            # Случайная скорость падения и дрейф
             snowflake.speed = random.uniform(self.snowflake_speed_min, self.snowflake_speed_max)
             snowflake.drift = random.uniform(self.snowflake_drift_min, self.snowflake_drift_max)
 
-            # Покачивание: сохраняем начальный X как базу
             snowflake.base_x = snowflake.center_x
             snowflake.wobble_offset = 0.0
 
             self.snowflake_list.append(snowflake)
 
-        # Обновляем каждую снежинку
         for snowflake in self.snowflake_list:
-            # Падение вниз
             snowflake.center_y -= snowflake.speed
-            # Дрейф влево/вправо
             snowflake.center_x += snowflake.drift
-            # Покачивание (лёгкое движение из стороны в сторону)
             snowflake.wobble_offset += self.snowflake_wobble_speed
-            # Используем только численные значения без дополнительных операций
             snowflake.center_x = snowflake.base_x + math.sin(snowflake.wobble_offset) * 0.8
 
-            # Удаляем, если ушла за нижнюю границу
             if snowflake.center_y < -20:
                 snowflake.remove_from_sprite_lists()
 

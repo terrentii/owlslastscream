@@ -88,10 +88,9 @@ class MainMenuView(arcade.View):
         self.batch = Batch()
         self.shape_list.clear()
 
-        # Позиционирование в левой нижней четверти
         menu_x = self.window.width * 0.25
-        menu_base_y = self.window.height * 0.25  # Базовая Y-координата для кнопок
-        button_rise = 100  # Поднятие кнопки "Играть" на 100 пикселей вверх
+        menu_base_y = self.window.height * 0.25
+        button_rise = 100
         
         # Позиция заголовка остается вверху
         title_y = self.window.height * 0.85
@@ -177,7 +176,7 @@ class MainMenuView(arcade.View):
         self.shape_list.append(self.play_button_outline)
 
         # Настройки
-        settings_y = menu_base_y - 20  # Небольшой зазор в 20 пикселей между кнопками
+        settings_y = menu_base_y - 20
 
         self.settings_text = arcade.Text(
             "Настройки",
@@ -214,13 +213,11 @@ class MainMenuView(arcade.View):
         self.shape_list.append(self.settings_button_outline)
 
     def check_button_click(self, x, y):
-        """Проверка нажатия на кнопку"""
-        # Позиции кнопок в левой нижней четверти
         menu_x = self.window.width * 0.25
         menu_base_y = self.window.height * 0.25
-        button_rise = 40  # Поднятие кнопки "Играть" на 40 пикселей вверх
+        button_rise = 40
         button_center_y = menu_base_y + self.button_height + button_rise
-        settings_y = menu_base_y - 20  # Обновляем позицию для проверки кликов с учетом зазора
+        settings_y = menu_base_y - 20
 
         # Кнопка "Играть"
         if (menu_x - self.button_width / 2 < x < menu_x + self.button_width / 2 and 
@@ -237,41 +234,29 @@ class MainMenuView(arcade.View):
         self.window.switch_view("game")
 
     def update_snowflakes(self):
-        """Обновление снежинок: создание, движение и удаление"""
-        # Спавн новых снежинок — только в пределах видимой области камеры
         if random.random() < self.snowflake_spawn_chance:
             snowflake = arcade.Sprite()
             snowflake.texture = self.snowflake_texture
 
-            # Случайный размер: от 0.5 до 1.5
             size = random.uniform(0.5, 1.5)
             snowflake.scale = size
 
-            # Начальная позиция — сверху экрана
             snowflake.center_x = random.uniform(0, self.window.width)
             snowflake.center_y = self.window.height + 20
 
-            # Случайная скорость падения и дрейф
             snowflake.speed = random.uniform(self.snowflake_speed_min, self.snowflake_speed_max)
             snowflake.drift = random.uniform(self.snowflake_drift_min, self.snowflake_drift_max)
 
-            # Покачивание: сохраняем начальный X как базу
             snowflake.base_x = snowflake.center_x
             snowflake.wobble_offset = 0.0
 
             self.snowflake_list.append(snowflake)
 
-        # Обновляем каждую снежинку
         for snowflake in self.snowflake_list:
-            # Падение вниз
             snowflake.center_y -= snowflake.speed
-            # Дрейф влево/вправо
             snowflake.center_x += snowflake.drift
-            # Покачивание (лёгкое движение из стороны в сторону)
             snowflake.wobble_offset += self.snowflake_wobble_speed
-            # Используем только численные значения без дополнительных операций
             snowflake.center_x = snowflake.base_x + math.sin(snowflake.wobble_offset) * 0.8
 
-            # Удаляем, если ушла за нижнюю границу
             if snowflake.center_y < -20:
                 snowflake.remove_from_sprite_lists()
