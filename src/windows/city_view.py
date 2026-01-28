@@ -6,19 +6,14 @@ from src.animations.RunningAlien import RunningAlien
 
 
 class CityView(arcade.View):
-    # ... существующий код выше ...
-
     def __init__(self, window, player_position=None):
         super().__init__()
         self.window = window
 
-        # Позиция игрока при входе в городскую локацию
         self.player_position = player_position or {'x': -4000, 'y': -1000}
 
-        # Добавляем флаг паузы
         self.paused = False
 
-        # Создаем прямоугольник для затемнения экрана
         self.overlay = arcade.shape_list.ShapeElementList()
         self.overlay_rectangle = arcade.shape_list.create_rectangle_filled(
             center_x=0, center_y=0,
@@ -27,7 +22,7 @@ class CityView(arcade.View):
         )
         self.overlay.append(self.overlay_rectangle)
 
-        # Создаем текст "Пауза"
+        # Пауза
         self.pause_text = arcade.Text(
             "ПАУЗА",
             x=0, y=0,
@@ -36,7 +31,6 @@ class CityView(arcade.View):
             anchor_x="center", anchor_y="center"
         )
 
-        # Настройка фона городской локации
         bg_texture = arcade.load_texture('resources/background/gorod.png')
         self.bg = arcade.Sprite()
         self.bg.texture = bg_texture
@@ -46,7 +40,7 @@ class CityView(arcade.View):
         self.bg_list = arcade.SpriteList()
         self.bg_list.append(self.bg)
 
-        # Фильтры (ночной свет)
+        # Фильтры
         night_texture = arcade.load_texture('resources/background/night.png')
         self.filter_list = arcade.SpriteList()
         self.night = arcade.Sprite()
@@ -56,30 +50,26 @@ class CityView(arcade.View):
         self.night.center_y = 0
         self.filter_list.append(self.night)
 
-        # Настройка камеры
+        # камера
         self.camera = arcade.camera.Camera2D()
         self.camera.use()
         self.camera.zoom = 0.75
 
-        # Настройка пришельца
         self.alien_list = arcade.SpriteList()
 
-        # Создаем пришельца с учетом переданной позиции
         self.alien = RunningAlien(scale=3.0)
         self.alien.center_x = self.player_position['x']
         self.alien.center_y = self.player_position['y']
         self.alien_list.append(self.alien)
 
-        # Инициализация стрелки над головой пришельца (создается, но пока не видна)
         self.arrow_list = arcade.SpriteList()
         self.arrow = arcade.Sprite('resources/UI/arrow/arrow_mini.png')
         self.arrow.scale = 5.0
         self.arrow.center_x = self.alien.center_x
-        self.arrow.center_y = self.alien.center_y + 400  # Над головой пришельца
-        self.arrow.alpha = 0  # Прозрачная стрелка
+        self.arrow.center_y = self.alien.center_y + 400
+        self.arrow.alpha = 0
         self.arrow_list.append(self.arrow)
 
-        # Флаг для отображения стрелки
         self.show_arrow = False
 
         # Настройка стен для городской локации
@@ -167,59 +157,44 @@ class CityView(arcade.View):
         self.up_pressed = False
         self.down_pressed = False
 
-        # --- НОВАЯ НАСТРОЙКА СНЕГА ---
         self.snowflake_list = arcade.SpriteList()
-        self.snowflake_spawn_chance = 0.2  # Увеличена вероятность спавна снежинки за кадр
-        self.snowflake_speed_min = 1.5  # Увеличена минимальная скорость падения
-        self.snowflake_speed_max = 4.0  # Увеличена максимальная скорость падения
-        self.snowflake_drift_min = -5.0  # Увеличен дрейф влево
-        self.snowflake_drift_max = 0.7  # Увеличен дрейф вправо
-        self.snowflake_wobble_speed = 0.03  # Увеличена скорость покачивания
-        self.snowflake_wobble_amount = 0.8  # Увеличена амплитуда покачивания
+        self.snowflake_spawn_chance = 0.2
+        self.snowflake_speed_min = 1.5
+        self.snowflake_speed_max = 4.0
+        self.snowflake_drift_min = -5.0
+        self.snowflake_drift_max = 0.7
+        self.snowflake_wobble_speed = 0.03
+        self.snowflake_wobble_amount = 0.8
 
-        # Создаём текстуру более белой и мягкой снежинки 8x8 пикселей
         self.snowflake_texture = arcade.make_soft_square_texture(8, arcade.color.WHITE_SMOKE, 255)
 
     def update_snowflakes(self):
-        """Обновление снежинок: создание, движение и удаление"""
-        # Спавн новых снежинок — только в пределах видимой области камеры
         if random.random() < self.snowflake_spawn_chance:
             snowflake = arcade.Sprite()
             snowflake.texture = self.snowflake_texture
 
-            # Случайный размер: от 0.5 до 1.5
             size = random.uniform(0.5, 1.5)
             snowflake.scale = size
 
-            # Начальная позиция — сверху экрана, с учётом камеры
             snowflake.center_x = random.uniform(
                 self.camera.position.x - self.window.width // 2,
                 self.camera.position.x + self.window.width // 2
             )
-            snowflake.center_y = self.camera.position.y + self.window.height // 2 + 50
+            snowflake.center_y = self.camera.position.y + self.window.height // 2 + 150
 
-            # Случайная скорость падения и дрейф
             snowflake.speed = random.uniform(self.snowflake_speed_min, self.snowflake_speed_max)
             snowflake.drift = random.uniform(self.snowflake_drift_min, self.snowflake_drift_max)
-
-            # Покачивание: сохраняем начальный X как базу
             snowflake.base_x = snowflake.center_x
             snowflake.wobble_offset = 0.0
 
             self.snowflake_list.append(snowflake)
 
-        # Обновляем каждую снежинку
         for snowflake in self.snowflake_list:
-            # Падение вниз
             snowflake.center_y -= snowflake.speed
-            # Дрейф влево/вправо
             snowflake.center_x += snowflake.drift
-            # Покачивание (лёгкое движение из стороны в сторону)
             snowflake.wobble_offset += self.snowflake_wobble_speed
-            # Используем только численные значения без дополнительных операций
             snowflake.center_x = snowflake.base_x + math.sin(snowflake.wobble_offset) * 0.8
 
-            # Удаляем, если ушла за нижнюю границу
             if snowflake.center_y < self.camera.position.y - self.window.height // 2:
                 snowflake.remove_from_sprite_lists()
 
@@ -227,31 +202,24 @@ class CityView(arcade.View):
         """Отрисовка игрового экрана"""
         self.clear()
 
-        # Отрисовка игрового мира
         self.camera.use()
         self.bg_list.draw(pixelated=True)
         self.wall_list.draw()
 
-        # Отрисовка снежинок
-
-
-        # Фильтры (ночной свет)
+        # Фильтры
         self.filter_list.draw()
         self.alien_list.draw(pixelated=True)
         self.arrow_list.draw(pixelated=True)
 
         self.snowflake_list.draw()
 
-        # Отрисовка диалогового окна
         if hasattr(self, 'dialogue_active') and self.dialogue_active:
             self.dialogue_sprite_list.draw(pixelated=True)
             self.dialogue_text_sprite.draw()
 
-        # Отрисовка текста с координатами
         if hasattr(self, 'coordinates_text'):
             self.coordinates_text.draw()
 
-        # Отрисовка экрана паузы
         if self.paused:
             self.overlay_rectangle.center_x = self.camera.position.x
             self.overlay_rectangle.center_y = self.camera.position.y
@@ -265,17 +233,14 @@ class CityView(arcade.View):
         if self.paused:
             return
 
-        # Обновление снежинок
         self.update_snowflakes()
 
-        # скорость по оси X
         self.alien.change_x = 0
         if self.left_pressed and not self.right_pressed:
             self.alien.change_x = -settings.PLAYER_SPEED
         elif self.right_pressed and not self.left_pressed:
             self.alien.change_x = settings.PLAYER_SPEED
 
-        # скорость по оси Y
         self.alien.change_y = 0
         if self.up_pressed and not self.down_pressed:
             self.alien.change_y = settings.PLAYER_SPEED
@@ -285,17 +250,14 @@ class CityView(arcade.View):
         self.alien_list.update()
         self.alien.update_animation(delta_time)
 
-        # Проверка коллизии со стенами
         if arcade.check_for_collision_with_list(self.alien, self.wall_list):
             self.alien.center_x -= self.alien.change_x
             self.alien.center_y -= self.alien.change_y
 
-        # Камера следует за пришельцем
         camera_x = self.alien.center_x
         camera_y = self.alien.center_y + settings.height * 0.2
         self.camera.position = camera_x, camera_y
 
-        # Обновление координат
         if not hasattr(self, 'coordinates_text'):
             self.coordinates_text = arcade.Text(
                 "",
@@ -308,7 +270,6 @@ class CityView(arcade.View):
         self.coordinates_text.x = camera_x + settings.width // 2 - 20
         self.coordinates_text.y = camera_y + settings.height // 2 - 20
 
-        # Диалоговое окно
         if hasattr(self, 'dialogue_box'):
             self.dialogue_box.center_x = camera_x
             self.dialogue_box.bottom = camera_y - (settings.height // 2)
@@ -316,13 +277,11 @@ class CityView(arcade.View):
             self.dialogue_speaker.left = self.dialogue_box.left + 20
             self.dialogue_speaker.bottom = self.dialogue_box.bottom + 20
 
-        # Обновление стрелки
         if self.show_arrow:
             self.arrow.center_x = self.alien.center_x
             self.arrow.center_y = self.alien.center_y + 70
 
-        # Выход из локации
-        if self.alien.center_x == -4200 and self.alien.center_y == -1000:
+        if self.alien.center_x == -4200 or self.alien.center_x == -4000 and self.alien.center_y == -1000 or self.alien.center_y == -1200:
             self.window.switch_view("game")
 
     def on_draw(self):
@@ -333,18 +292,14 @@ class CityView(arcade.View):
         self.camera.use()
         self.bg_list.draw(pixelated=True)
         self.wall_list.draw()
-        
-        # Отрисовка снежинок
-        self.snowflake_list.draw()
 
-        # Фильтры (ночной свет)
         self.filter_list.draw()
         self.alien_list.draw(pixelated=True)
-        
-        # Отрисовка стрелки над головой пришельца
+
+        self.snowflake_list.draw()
+
         self.arrow_list.draw(pixelated=True)
 
-        # Отрисовка диалогового окна
         if hasattr(self, 'dialogue_active') and self.dialogue_active:
             self.dialogue_sprite_list.draw(pixelated=True)
             self.dialogue_text_sprite.draw()
@@ -352,14 +307,14 @@ class CityView(arcade.View):
         # Отрисовка текста с координатами
         if hasattr(self, 'coordinates_text'):
             self.coordinates_text.draw()
-            
+
         # Отрисовка экрана паузы
         if self.paused:
             # Устанавливаем оверлей по центру камеры
             self.overlay_rectangle.center_x = self.camera.position.x
             self.overlay_rectangle.center_y = self.camera.position.y
             self.overlay.draw()
-            
+
             # Позиционируем текст "Пауза" по центру экрана
             self.pause_text.x = self.camera.position.x
             self.pause_text.y = self.camera.position.y + 100
@@ -369,10 +324,10 @@ class CityView(arcade.View):
         """Обновление игровой логики"""
         if self.paused:
             return
-            
+
         # Обновление снежинок
         self.update_snowflakes()
-        
+
         # скорость по оси X
         self.alien.change_x = 0
         if self.left_pressed and not self.right_pressed:
@@ -433,12 +388,12 @@ class CityView(arcade.View):
             # Спрайт говорящего прижат к левому краю диалогового окна
             self.dialogue_speaker.left = self.dialogue_box.left + 20
             self.dialogue_speaker.bottom = self.dialogue_box.bottom + 20
-            
+
         # Обновляем позицию стрелки над головой пришельца только если диалог с Ness завершен
         if self.show_arrow:
             self.arrow.center_x = self.alien.center_x
             self.arrow.center_y = self.alien.center_y + 70  # Над головой пришельца
-        
+
         # Проверка выхода из городской локации (если игрок возвращается назад)
         if self.alien.center_x == -4200 and self.alien.center_y == -1000:  # Проверка по X координате
             # Возвращаемся в основную локацию с помощью switch_view
@@ -449,7 +404,7 @@ class CityView(arcade.View):
         if key == arcade.key.ESCAPE:
             # Переключаем состояние паузы
             self.paused = not self.paused
-            
+
             # При активации паузы обновляем позицию оверлея и текста
             if self.paused:
                 self.overlay_rectangle.center_x = self.camera.position.x
@@ -489,10 +444,10 @@ class CityView(arcade.View):
 
             # Начальная позиция — сверху экрана, с учётом камеры
             snowflake.center_x = random.uniform(
-                self.camera.position.x - self.window.width // 2,
-                self.camera.position.x + self.window.width // 2
+                self.camera.position.x - self.window.width // 2 - 1000,
+                self.camera.position.x + self.window.width // 2 + 1000
             )
-            snowflake.center_y = self.camera.position.y + self.window.height // 2 + 50
+            snowflake.center_y = self.camera.position.y + self.window.height // 2 + 500
 
             # Случайная скорость падения и дрейф
             snowflake.speed = random.uniform(self.snowflake_speed_min, self.snowflake_speed_max)
@@ -504,17 +459,11 @@ class CityView(arcade.View):
 
             self.snowflake_list.append(snowflake)
 
-        # Обновляем каждую снежинку
         for snowflake in self.snowflake_list:
-            # Падение вниз
             snowflake.center_y -= snowflake.speed
-            # Дрейф влево/вправо
             snowflake.center_x += snowflake.drift
-            # Покачивание (лёгкое движение из стороны в сторону)
             snowflake.wobble_offset += self.snowflake_wobble_speed
-            # Используем только численные значения без дополнительных операций
             snowflake.center_x = snowflake.base_x + math.sin(snowflake.wobble_offset) * 0.8
 
-            # Удаляем, если ушла за нижнюю границу
-            if snowflake.center_y < self.camera.position.y - self.window.height // 2:
+            if snowflake.center_y < self.camera.position.y - self.window.height // 2 - 500:
                 snowflake.remove_from_sprite_lists()
