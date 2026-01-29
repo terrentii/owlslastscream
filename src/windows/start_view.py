@@ -21,7 +21,17 @@ class StartView(arcade.View):
         self.owl_scale = 10.0
 
         self.snowflake_list = arcade.SpriteList()
-        self.owl_list = arcade.SpriteList()  # Список для спрайта совы
+        self.owl_list = arcade.SpriteList()
+
+        self.background_texture = arcade.load_texture('resources/UI/spruces_start.png')
+        self.background_sprite = arcade.Sprite()
+        self.background_sprite.texture = self.background_texture
+        self.background_sprite.scale = 10.0
+        self.background_sprite.center_x = self.window.width / 2
+        self.background_sprite.center_y = self.window.height / 2
+
+        self.fon_owl_list = arcade.SpriteList()
+        self.fon_owl_list.append(self.background_sprite)
 
         # Загрузка текстур для анимации совы
         self.owl_textures = []
@@ -44,7 +54,7 @@ class StartView(arcade.View):
         self.owl_sprite = arcade.Sprite()
         self.owl_sprite.center_x = -100  # Начальная позиция за левой границей экрана
         self.owl_sprite.center_y = self.window.height * 0.7  # 70% от высоты экрана
-        self.owl_sprite.scale = 10.0
+        self.owl_sprite.scale = 1.5
         self.owl_sprite.texture = self.owl_textures[0]
         self.owl_list.append(self.owl_sprite)
         
@@ -72,7 +82,9 @@ class StartView(arcade.View):
 
     def on_draw(self):
         self.clear()
-        
+
+        self.fon_owl_list.draw(pixelated=True)
+
         # Отрисовка снежинок
         self.snowflake_list.draw()
             
@@ -102,7 +114,7 @@ class StartView(arcade.View):
             
         self.timer += delta_time
 
-        if self.timer >= 3.0:
+        if self.timer >= 5.0:
             self.window.switch_view("main_menu")
 
     def on_resize(self, width: float, height: float):
@@ -153,7 +165,7 @@ class StartView(arcade.View):
             settings.title,
             center_x,
             center_y,
-            arcade.color.RED,
+            arcade.color.SNOW,
             font_size,
             bold=True,
             align="center",
@@ -173,7 +185,7 @@ class StartView(arcade.View):
             center_y=center_y,
             width=rect_width,
             height=rect_height,
-            color=arcade.color.RED,
+            color=arcade.color.ICEBERG,
             border_width=2
         )
         self.shape_list.append(self.rect_outline)
