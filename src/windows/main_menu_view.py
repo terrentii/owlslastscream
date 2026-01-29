@@ -55,8 +55,8 @@ class MainMenuView(arcade.View):
 
     def on_draw(self):
         self.clear(self.bg_color)
-        self.snowflake_list.draw()
         self.owl_list.draw(pixelated=True)
+        self.snowflake_list.draw()
 
         self.shape_list.draw()
         self.batch.draw()
