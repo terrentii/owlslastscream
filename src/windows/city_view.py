@@ -333,14 +333,14 @@ class CityView(arcade.View):
         self.camera.use()
         self.bg_list.draw(pixelated=True)
         self.wall_list.draw()
-        
+
         # Отрисовка снежинок
         self.snowflake_list.draw()
 
         # Фильтры (ночной свет)
         self.filter_list.draw()
         self.alien_list.draw(pixelated=True)
-        
+
         # Отрисовка стрелки над головой пришельца
         self.arrow_list.draw(pixelated=True)
 
@@ -352,14 +352,14 @@ class CityView(arcade.View):
         # Отрисовка текста с координатами
         if hasattr(self, 'coordinates_text'):
             self.coordinates_text.draw()
-            
+
         # Отрисовка экрана паузы
         if self.paused:
             # Устанавливаем оверлей по центру камеры
             self.overlay_rectangle.center_x = self.camera.position.x
             self.overlay_rectangle.center_y = self.camera.position.y
             self.overlay.draw()
-            
+
             # Позиционируем текст "Пауза" по центру экрана
             self.pause_text.x = self.camera.position.x
             self.pause_text.y = self.camera.position.y + 100
@@ -369,10 +369,10 @@ class CityView(arcade.View):
         """Обновление игровой логики"""
         if self.paused:
             return
-            
+
         # Обновление снежинок
         self.update_snowflakes()
-        
+
         # скорость по оси X
         self.alien.change_x = 0
         if self.left_pressed and not self.right_pressed:
@@ -433,12 +433,12 @@ class CityView(arcade.View):
             # Спрайт говорящего прижат к левому краю диалогового окна
             self.dialogue_speaker.left = self.dialogue_box.left + 20
             self.dialogue_speaker.bottom = self.dialogue_box.bottom + 20
-            
+
         # Обновляем позицию стрелки над головой пришельца только если диалог с Ness завершен
         if self.show_arrow:
             self.arrow.center_x = self.alien.center_x
             self.arrow.center_y = self.alien.center_y + 70  # Над головой пришельца
-        
+
         # Проверка выхода из городской локации (если игрок возвращается назад)
         if self.alien.center_x == -4200 and self.alien.center_y == -1000:  # Проверка по X координате
             # Возвращаемся в основную локацию с помощью switch_view
@@ -449,7 +449,7 @@ class CityView(arcade.View):
         if key == arcade.key.ESCAPE:
             # Переключаем состояние паузы
             self.paused = not self.paused
-            
+
             # При активации паузы обновляем позицию оверлея и текста
             if self.paused:
                 self.overlay_rectangle.center_x = self.camera.position.x
