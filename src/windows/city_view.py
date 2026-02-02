@@ -6,11 +6,18 @@ from src.animations.RunningAlien import RunningAlien
 
 
 
+import json
+import os
+import time
+
 class CityView(arcade.View):
     def __init__(self, window, player_position=None):
         super().__init__()
         self.window = window
-        self.player_position = player_position or {'x': -4000, 'y': -1000}
+        self.save_file = "saves/savegame.json"
+        self.last_save_time = 0
+        self.save_interval = 20  # seconds
+        self.player_position = player_position or self.load_save() or {'x': -4000, 'y': -1000}
         self.paused = False
 
         # Оверлей и текст паузы
@@ -50,6 +57,9 @@ class CityView(arcade.View):
         self.alien.center_y = self.player_position['y']
         self.alien_list = arcade.SpriteList()
         self.alien_list.append(self.alien)
+
+        # Сюжетные фазы (пример)
+        self.story_phases = self.load_story_phases()
 
         # Стрелка над пришельцем
         self.arrow = arcade.Sprite('resources/UI/arrow/arrow_mini.png', scale=5.0)
@@ -177,7 +187,11 @@ class CityView(arcade.View):
         if self.paused:
             return
 
+        # Обновление снежинок
         self.update_snowflakes()
+
+        # Автоматическое сохранение
+        self.auto_save(delta_time)
 
         # Обновление скорости пришельца
         self.alien.change_x = 0
@@ -235,6 +249,56 @@ class CityView(arcade.View):
         if self.alien.center_x == -4200 and self.alien.center_y == -1000:
             self.window.switch_view("game")
 
+    def save_game(self):
+        save_data = {
+            'player_position': {
+                'x': self.alien.center_x,
+                'y': self.alien.center_y
+            },
+            'story_phases': self.story_phases,
+            'timestamp': time.time()
+        }
+        os.makedirs(os.path.dirname(self.save_file), exist_ok=True)
+        with open(self.save_file, 'w', encoding='utf-8') as f:
+            json.dump(save_data, f, ensure_ascii=False, indent=2)
+
+    def load_save(self):
+        try:
+            if os.path.exists(self.save_file):
+                with open(self.save_file, 'r', encoding='utf-8') as f:
+                    save_data = json.load(f)
+                    return save_data.get('player_position')
+        except Exception as e:
+            print(f"Failed to load save: {e}")
+        return None
+        
+    def load_story_phases(self):
+        try:
+            if os.path.exists(self.save_file):
+                with open(self.save_file, 'r', encoding='utf-8') as f:
+                    save_data = json.load(f)
+                    return save_data.get('story_phases', {})
+        except Exception as e:
+            print(f"Failed to load story phases: {e}")
+        return {}
+
+    def auto_save(self, delta_time):
+        self.last_save_time += delta_time
+        if self.last_save_time >= self.save_interval:
+            self.save_game()
+            print(f"Сохранение создано: X={self.alien.center_x}, Y={self.alien.center_y}")
+            self.last_save_time = 0
+
+    def delete_save(self):
+        if os.path.exists(self.save_file):
+            os.remove(self.save_file)
+            print("Save file deleted")
+            # Reset story phases
+            self.story_phases = {}
+            # Reset player position to default
+            self.alien.center_x = -4000
+            self.alien.center_y = -1000
+
     def on_key_press(self, key, modifiers):
         if key == arcade.key.ESCAPE:
             self.paused = not self.paused
@@ -243,6 +307,8 @@ class CityView(arcade.View):
                 self.overlay_rectangle.center_y = self.camera.position.y
                 self.pause_text.x = self.camera.position.x
                 self.pause_text.y = self.camera.position.y + 100
+        elif key == arcade.key.P:
+            self.delete_save()
         elif key in (arcade.key.LEFT, arcade.key.A):
             self.left_pressed = True
         elif key in (arcade.key.RIGHT, arcade.key.D):
