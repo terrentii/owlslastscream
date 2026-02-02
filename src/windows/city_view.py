@@ -14,7 +14,7 @@ class CityView(arcade.View):
     def __init__(self, window, player_position=None):
         super().__init__()
         self.window = window
-        self.save_file = "saves/savegame.json"
+        self.save_file = "saves/city_save.json"
         self.last_save_time = 0
         self.save_interval = 20  # seconds
         self.player_position = player_position or self.load_save() or {'x': -4000, 'y': -1000}
@@ -292,7 +292,7 @@ class CityView(arcade.View):
     def delete_save(self):
         if os.path.exists(self.save_file):
             os.remove(self.save_file)
-            print("Save file deleted")
+            print("City save file deleted")
             # Reset story phases
             self.story_phases = {}
             # Reset player position to default
