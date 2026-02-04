@@ -159,13 +159,6 @@ class CityView(arcade.View):
         self.dialogue_active = False
         self.dialogue_text = ""
 
-        # Музыка
-        try:
-            self.music = arcade.Sound("sound/music/OutOfSpace.wav")
-            self.music_player = self.music.play(loop=True)
-        except Exception as e:
-            print(f"Failed to load music: {e}")
-
     def update_snowflakes(self):
         if random.random() < self.snowflake_spawn_chance:
             snowflake = arcade.Sprite(self.snowflake_texture)
@@ -210,12 +203,12 @@ class CityView(arcade.View):
             self.dialogue_sprite_list.draw(pixelated=True)
             self.dialogue_text_sprite.draw()
 
-        # Диалоговое окно (если активно)
+        # Диалоговое окно
         if hasattr(self, 'dialogue_active') and self.dialogue_active:
             self.dialogue_sprite_list.draw(pixelated=True)
             self.dialogue_text_sprite.draw()
 
-        # Текст с координатами (если создан)
+        # Текст с координатами
         if hasattr(self, 'coordinates_text'):
             self.coordinates_text.draw()
 
@@ -232,13 +225,9 @@ class CityView(arcade.View):
         if self.paused:
             return
 
-        # Обновление снежинок
         self.update_snowflakes()
-
-        # Автоматическое сохранение
         self.auto_save(delta_time)
 
-        # Обновление скорости пришельца
         self.alien.change_x = 0
         if self.left_pressed and not self.right_pressed:
             self.alien.change_x = -settings.PLAYER_SPEED
@@ -251,41 +240,38 @@ class CityView(arcade.View):
         elif self.down_pressed and not self.up_pressed:
             self.alien.change_y = -settings.PLAYER_SPEED
 
-        # Обновление позиций и анимации
         self.alien_list.update()
         self.alien.update_animation(delta_time)
 
-        # Проверка коллизий со стенами
+        # коллизия со стенами
         if arcade.check_for_collision_with_list(self.alien, self.wall_list):
             self.alien.center_x -= self.alien.change_x
             self.alien.center_y -= self.alien.change_y
 
-        # Проверка коллизии с ness1
+        # Коллизии с Ness
         if arcade.check_for_collision(self.alien, self.ness1):
             self.alien.center_x -= self.alien.change_x
             self.alien.center_y -= self.alien.change_y
-
-        # Проверка коллизии с ness2
         if arcade.check_for_collision(self.alien, self.ness2):
             self.alien.center_x -= self.alien.change_x
             self.alien.center_y -= self.alien.change_y
 
-        # Позиционирование камеры
+        # Камера
         camera_x = self.alien.center_x
         camera_y = self.alien.center_y + settings.height * 0.2
         self.camera.position = camera_x, camera_y
 
-        # Обновление текста с координатами
-        if not hasattr(self, 'coordinates_text'):
-            self.coordinates_text = arcade.Text(
-                "", x=0, y=0, color=arcade.color.WHITE, font_size=24,
-                anchor_x="right", anchor_y="top"
-            )
-        self.coordinates_text.text = f"X: {int(self.alien.center_x)}, Y: {int(self.alien.center_y)}"
-        self.coordinates_text.x = camera_x + settings.width // 2 - 20
-        self.coordinates_text.y = camera_y + settings.height // 2 - 20
+        # # Координаты (Dev Func)
+        # if not hasattr(self, 'coordinates_text'):
+        #     self.coordinates_text = arcade.Text(
+        #         "", x=0, y=0, color=arcade.color.WHITE, font_size=24,
+        #         anchor_x="right", anchor_y="top"
+        #     )
+        # self.coordinates_text.text = f"X: {int(self.alien.center_x)}, Y: {int(self.alien.center_y)}"
+        # self.coordinates_text.x = camera_x + settings.width // 2 - 20
+        # self.coordinates_text.y = camera_y + settings.height // 2 - 20
 
-        # Обновление диалогового окна
+        # Диалоговое окно
         if hasattr(self, 'dialogue_box'):
             self.dialogue_box.center_x = camera_x
             self.dialogue_box.bottom = camera_y - (settings.height // 2)
@@ -295,21 +281,18 @@ class CityView(arcade.View):
             self.dialogue_speaker.left = self.dialogue_box.left + 20
             self.dialogue_speaker.bottom = self.dialogue_box.bottom + 20
 
-        # Обновление стрелки над пришельцем
+        # Стрелка
         if self.show_arrow:
             self.arrow.center_x = self.alien.center_x
             self.arrow.center_y = self.alien.center_y + 70
 
-            # Целевая точка для стрелки
             target_x = -205
             target_y = 2110
-            
-            # Угол между текущей позицией пришельца и целью
+
             dx = target_x - self.alien.center_x
             dy = target_y - self.alien.center_y
             angle = math.degrees(math.atan2(dy, dx))
 
-            # Поворачиваем стрелку
             self.arrow.angle = -angle + 90
 
         # Диалог с Ness 1
@@ -320,14 +303,14 @@ class CityView(arcade.View):
 
         if distance_to_ness1 < 150 and not self.dialogue_active:
             self.dialogue_active = True
-            self.dialogue_text = "К сожалению магазин пока закрыт, поэтому переоденемся здесь, жми кнопку 'C'!"
+            self.dialogue_text = "К сожалению магазин пока закрыт, поэтому мы останемся без маскировки("
             self.dialogue_text_sprite.text = self.dialogue_text
             self.dialogue_speaker.texture = arcade.load_texture('resources/persons/alien_ness/ness_in_spacesuit.png')
-        elif distance_to_ness1 >= 150 and self.dialogue_active and self.dialogue_text == "К сожалению магазин пока закрыт, поэтому переоденемся здесь, жми кнопку 'C'!":
+        elif distance_to_ness1 >= 150 and self.dialogue_active and self.dialogue_text == "К сожалению магазин пока закрыт, поэтому мы останемся без маскировки(":
             self.dialogue_active = False
             self.dialogue_text = ""
             self.dialogue_text_sprite.text = self.dialogue_text
-            # Скрываем стрелку после завершения диалога с ness1
+
             self.show_arrow = False
             self.arrow.alpha = 0
 
@@ -342,7 +325,7 @@ class CityView(arcade.View):
             self.dialogue_active = False
             self.dialogue_text = ""
             self.dialogue_text_sprite.text = self.dialogue_text
-            # Показываем стрелку после завершения диалога с ness2
+
             self.show_arrow = True
             self.arrow.alpha = 255
 
@@ -393,10 +376,9 @@ class CityView(arcade.View):
     def delete_save(self):
         if os.path.exists(self.save_file):
             os.remove(self.save_file)
-            print("City save file deleted")
-            # Reset story phases
+
             self.story_phases = {}
-            # Reset player position to default
+
             self.alien.center_x = -4000
             self.alien.center_y = -1000
 
