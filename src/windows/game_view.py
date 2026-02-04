@@ -503,6 +503,8 @@ class GameView(arcade.View):
             self.up_pressed = False
         elif key == arcade.key.DOWN or key == arcade.key.S:
             self.down_pressed = False
+        elif key == arcade.key.P:
+            self.delete_save()
 
     def save_game(self):
         save_data = {
@@ -547,15 +549,11 @@ class GameView(arcade.View):
     def delete_save(self):
         if os.path.exists(self.save_file):
             os.remove(self.save_file)
+
             self.story_phases = {}
+
             self.alien.center_x = settings.width // 2
             self.alien.center_y = settings.height // 2
-        elif key == arcade.key.RIGHT or key == arcade.key.D:
-            self.right_pressed = False
-        elif key == arcade.key.UP or key == arcade.key.W:
-            self.up_pressed = False
-        elif key == arcade.key.DOWN or key == arcade.key.S:
-            self.down_pressed = False
 
     def update_snowflakes(self):
         if random.random() < self.snowflake_spawn_chance:
