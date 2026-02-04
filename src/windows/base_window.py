@@ -34,7 +34,6 @@ class BaseWindow(arcade.Window):
     
         # Добавление в листы
         self.alien_list.append(self.alien)
-        # Храним представления
         self.views = {}
         
         # Настройка снега
@@ -44,6 +43,13 @@ class BaseWindow(arcade.Window):
         self.snowflake_speed_y = 2.5  # Увеличена скорость падения
         self.snowflake_drift_x = -0.8  # Увеличено смещение влево
         self.snowflake_wind = 0  # Для эффекта ветра
+
+        # Музыка
+        try:
+            self.music = arcade.Sound("sound/music/OutOfSpace.wav")
+            self.music_player = self.music.play(loop=True)
+        except Exception as e:
+            print(f"Failed to load music: {e}")
 
     def get_view(self, view_name):
         """Получить или создать представление по имени"""
@@ -63,6 +69,9 @@ class BaseWindow(arcade.Window):
             elif view_name == "settings":
                 from src.windows.settings_view import SettingsView
                 self.views[view_name] = SettingsView(self)
+            elif view_name == "shop_world":
+                from src.windows.shop_world_view import ShopWorldView
+                self.views[view_name] = ShopWorldView(self)
 
         return self.views[view_name]
 

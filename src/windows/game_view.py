@@ -10,7 +10,343 @@ import os
 import time
 
 class GameView(arcade.View):
-    """Представление игрового процесса"""
+    def __init__(self, window, player_position=None):
+        super().__init__()
+        self.window = window
+        self.save_file = "saves/forest_save.json"
+        self.last_save_time = 0
+        self.save_interval = 20  # seconds
+        self.dialogue_active = False
+        self.dialogue_text = ""
+        
+        # Позиция игрока
+        self.player_position = player_position or self.load_save() or {'x': settings.width // 2, 'y': settings.height // 2}
+        
+        # Сюжетные фазы (пример)
+        self.story_phases = self.load_story_phases()
+        
+        # Добавляем флаг паузы
+        self.paused = False
+        
+        # Создаем прямоугольник для затемнения экрана
+        self.overlay = arcade.shape_list.ShapeElementList()
+        self.overlay_rectangle = arcade.shape_list.create_rectangle_filled(
+            center_x=0, center_y=0,
+            width=settings.width * 30, height=settings.height * 30,
+            color=(0, 0, 0, 150)
+        )
+        self.overlay.append(self.overlay_rectangle)
+        
+        # Создаем текст "Пауза"
+        self.pause_text = arcade.Text(
+            "ПАУЗА",
+            x=0, y=0,
+            color=arcade.color.WHITE,
+            font_size=50,
+            anchor_x="center", anchor_y="center"
+        )
+        
+        # --- НОВАЯ НАСТРОЙКА СНЕГА ---
+        self.snowflake_list = arcade.SpriteList()
+        self.snowflake_spawn_chance = 0.2  # Увеличена вероятность спавна снежинки за кадр
+        self.snowflake_speed_min = 1.5  # Увеличена минимальная скорость падения
+        self.snowflake_speed_max = 4.0  # Увеличена максимальная скорость падения
+        self.snowflake_drift_min = -5.0  # Увеличен дрейф влево
+        self.snowflake_drift_max = 0.7  # Увеличен дрейф вправо
+        self.snowflake_wobble_speed = 0.03  # Увеличена скорость покачивания
+        self.snowflake_wobble_amount = 2.0  # Увеличена амплитуда покачивания
+
+        # Создаём текстуру более белой и мягкой снежинки 8x8 пикселей
+        self.snowflake_texture = arcade.make_soft_square_texture(8, arcade.color.WHITE_SMOKE, 255)
+        
+        # Настройка фона
+        bg_texture = arcade.load_texture('resources/background/forest_map.png')
+        self.bg = arcade.Sprite()
+        self.bg.texture = bg_texture
+        self.bg.scale = 10.0
+        self.bg.center_x = settings.width // 2
+        self.bg.center_y = settings.height // 2
+        self.bg_list = arcade.SpriteList()
+        self.bg_list.append(self.bg)
+
+        # Фильтры
+        night_texture = arcade.load_texture('resources/background/night.png')
+        self.night = arcade.Sprite()
+        self.filter_list = arcade.SpriteList()
+        self.night.texture = night_texture
+        self.night.scale = 20.0
+        self.night.center_x = 0
+        self.night.center_y = 0
+        self.filter_list.append(self.night)
+
+        # Настройка камеры
+        self.camera = arcade.camera.Camera2D()
+        self.camera.use()
+        self.camera.zoom = 0.75
+
+        # Настройка пришельца
+        self.alien_list = arcade.SpriteList()
+
+        self.alien = RunningAlien(scale=3.0)
+        self.alien.center_x = self.player_position['x']
+        self.alien.center_y = self.player_position['y']
+        self.alien_list.append(self.alien)
+        
+        # Инициализация стрелки над головой пришельца (создается, но пока не видна)
+        self.arrow_list = arcade.SpriteList()
+        self.arrow = arcade.Sprite('resources/UI/arrow/arrow_mini.png')
+        self.arrow.scale = 5.0
+        self.arrow.center_x = self.alien.center_x
+        self.arrow.center_y = self.alien.center_y + 400  # Над головой пришельца
+        self.arrow.alpha = 0  # Прозрачная стрелка
+        self.arrow_list.append(self.arrow)
+        
+        # Флаг для отображения стрелки
+        self.show_arrow = False
+
+        # Настройка стен
+        self.wall_list = arcade.SpriteList()
+        center_x = settings.width // 2
+        center_y = settings.height // 2
+        wall_texture = arcade.load_texture('resources/background/nothing.png')
+        wall_width = 64
+
+        # Размеры карты
+        map_width = 10000
+        map_height = 10000
+
+        # Координаты границ карты
+        left_edge = center_x - map_width // 2
+        right_edge = center_x + map_width // 2
+        bottom_edge = center_y - map_height // 2
+        top_edge = center_y + map_height // 2
+
+        # дороги
+        road_angles = [0, 120, 240]
+        road_width = 800
+        road_length = 6000
+        safe_zone_radius = 2000
+
+        # по кругу
+        outer_radius = 2000
+        circumference = 2 * 3.14159 * outer_radius
+        num_walls = int(circumference / wall_width)
+
+        for i in range(num_walls):
+            angle = 2 * 3.14159 * i / num_walls
+            angle_deg = math.degrees(angle)
+            in_road_area = False
+            for road_angle in road_angles:
+                # зона пропуска для дороги
+                angle_diff = abs(angle_deg - road_angle)
+                if angle_diff > 180:
+                    angle_diff = 360 - angle_diff
+                # если угол стены близок к углу дороги, пропускаем ее
+                if angle_diff < 10:  # зона пропуска
+                    in_road_area = True
+                    break
+
+            if not in_road_area:
+                wall = arcade.Sprite()
+                wall.texture = wall_texture
+                wall.center_x = center_x + outer_radius * math.cos(angle)
+                wall.center_y = center_y + outer_radius * math.sin(angle)
+                wall.angle = angle_deg + 90  # Поворачиваем стену по касательной
+                self.wall_list.append(wall)
+
+        # Добавляем стены вдоль дорог
+        for road_angle in road_angles:
+            road_angle_rad = math.radians(road_angle)
+            dx = math.cos(road_angle_rad)
+            dy = math.sin(road_angle_rad)
+
+            # вектор для размещения стен по бокам дороги
+            perp_dx = -dy
+            perp_dy = dx
+
+            # Размещаем стены вдоль дороги
+            for distance in range(safe_zone_radius + 40, road_length, 64):
+                for side_offset in [-road_width // 2, road_width // 2]:
+                    wall = arcade.Sprite()
+                    wall.texture = wall_texture
+                    wall.center_x = center_x + dx * distance + perp_dx * side_offset
+                    wall.center_y = center_y + dy * distance + perp_dy * side_offset
+                    wall.angle = road_angle + 90  # Поворачиваем стену перпендикулярно дороге
+                    self.wall_list.append(wall)
+
+        # Обнесем всю карту по периметру стенами (дополнительная мера)
+        # Нижняя сторона
+        for x in range(left_edge + wall_width // 2, right_edge, wall_width):
+            wall = arcade.Sprite()
+            wall.texture = wall_texture
+            wall.center_x = x
+            wall.center_y = bottom_edge
+            wall.angle = 0  # Горизонтальная ориентация
+            self.wall_list.append(wall)
+
+        # Верхняя сторона
+        for x in range(left_edge + wall_width // 2, right_edge, wall_width):
+            wall = arcade.Sprite()
+            wall.texture = wall_texture
+            wall.center_x = x
+            wall.center_y = top_edge
+            wall.angle = 0  # Горизонтальная ориентация
+            self.wall_list.append(wall)
+
+        # Левая сторона
+        for y in range(bottom_edge + wall_width // 2, top_edge, wall_width):
+            wall = arcade.Sprite()
+            wall.texture = wall_texture
+            wall.center_x = left_edge
+            wall.center_y = y
+            wall.angle = 90  # Вертикальная ориентация
+            self.wall_list.append(wall)
+
+        # Правая сторона
+        for y in range(bottom_edge + wall_width // 2, top_edge, wall_width):
+            wall = arcade.Sprite()
+            wall.texture = wall_texture
+            wall.center_x = right_edge
+            wall.center_y = y
+            wall.angle = 90  # Вертикальная ориентация
+            self.wall_list.append(wall)
+
+        # Настройки spaceship
+        spaceship_texture = arcade.load_texture('resources/buildings/spaceship/spaceship.png')
+        self.spaceship = arcade.Sprite(scale=10.0)
+        self.buildings_list = arcade.SpriteList()
+        self.spaceship.texture = spaceship_texture
+        self.spaceship.center_x = 0
+        self.spaceship.center_y = 0
+        self.buildings_list.append(self.spaceship)
+
+        # Настройка Ness
+        self.ness = arcade.Sprite('resources/persons/alien_ness/ness_in_spacesuit_darked.png')
+        # Ness
+        ness_center_x = settings.width // 2 + 100
+        ness_center_y = settings.height // 4
+
+        self.ness.center_x = ness_center_x
+        self.ness.center_y = ness_center_y
+        self.alien_list.append(self.ness)
+
+        # Настройка пришельца sor
+        self.sor = arcade.Sprite('resources/persons/alien_sor/alien_sor_not_animated.png')
+        self.sor.center_x = settings.width // 2 - 150
+        self.sor.center_y = settings.height // 4 + 500
+        self.alien_list.append(self.sor)
+
+        # Добавляем коллизию для sor
+        self.sor.width = 200
+        self.sor.height = 200
+
+        # Настройка факелов
+        self.torch_list = arcade.SpriteList()
+        torch_texture = arcade.load_texture('resources/buildings/torch.png')
+        center_x = settings.width // 2
+        center_y = settings.height // 2
+
+        # Размещаем факелы вдоль внешнего круга барьеров (радиус 2000), но гораздо реже
+        outer_radius = 1300
+        torch_spacing = 700
+
+        # Общая длина окружности
+        circumference = 2 * 3.14159 * outer_radius
+        # Количество факелов
+        num_torches = int(circumference / torch_spacing)
+
+        for i in range(num_torches):
+            angle = 2 * 3.14159 * i / num_torches
+
+            # Пропускаем места, где идут дороги
+            in_road_area = False
+            road_angles = [0, 120, 240]
+
+            if not in_road_area:
+                torch = arcade.Sprite(scale=3.0)
+                torch.texture = torch_texture
+                torch.center_x = center_x + outer_radius * math.cos(angle)
+                torch.center_y = center_y + outer_radius * math.sin(angle)
+                self.torch_list.append(torch)
+
+        # Размещаем факелы вдоль дорог
+        road_width = 800
+        road_length = 4500
+        safe_zone_radius = 2000
+
+        for road_angle in road_angles:
+            road_angle_rad = math.radians(road_angle)
+            dx = math.cos(road_angle_rad)
+            dy = math.sin(road_angle_rad)
+
+            # Перпендикулярный вектор для размещения факелов по бокам дороги
+            perp_dx = -dy
+            perp_dy = dx
+
+            # Размещаем факелы вдоль дороги с большим интервалом
+            for distance in range(safe_zone_radius + 200, road_length, 800):
+                for side_offset in [road_width // 2 - 400, road_width // 2 - 400]:
+                    torch = arcade.Sprite(scale=3.0)
+                    torch.texture = torch_texture
+                    torch.center_x = center_x + dx * distance + perp_dx * side_offset
+                    torch.center_y = center_y + dy * distance + perp_dy * side_offset
+                    self.torch_list.append(torch)
+
+        # Добавляем коллизию для spaceship
+        self.spaceship.width = spaceship_texture.width * 10.0
+        self.spaceship.height = spaceship_texture.height * 10.0
+
+        # Добавляем коллизию для Ness
+        self.ness.width = 120
+        self.ness.height = 120
+
+        # Настройка диалогового окна
+        # Получаем размеры экрана из настроек
+        screen_width = settings.width
+        screen_height = settings.height
+
+        # Диалоговое окно, плотно прилегающее к нижнему краю экрана
+        self.dialogue_box = arcade.SpriteSolidColor(
+            screen_width,
+            120,
+            color=(10, 9, 9, 180)
+        )
+        self.dialogue_box.center_x = screen_width // 2  # По центру по X
+        self.dialogue_box.bottom = 0  # Прижато к нижнему краю
+        self.dialogue_sprite_list = arcade.SpriteList()
+        self.dialogue_sprite_list.append(self.dialogue_box)
+
+        # Текст диалога
+        self.dialogue_text_sprite = arcade.Text(
+            "",
+            self.dialogue_box.center_x + 80,
+            self.dialogue_box.center_y,
+            arcade.color.ASH_GREY,
+            font_size=18,
+            anchor_x="center",
+            anchor_y="center",
+            multiline=True,
+            width=screen_width - 200
+        )
+
+        self.dialogue_speaker = arcade.Sprite('resources/persons/alien_ness/ness_in_spacesuit.png')
+        self.dialogue_speaker.scale = 3
+        self.dialogue_speaker.left = 20
+        self.dialogue_speaker.bottom = 20
+        self.dialogue_sprite_list.append(self.dialogue_speaker)
+
+        # Управление
+        self.left_pressed = False
+        self.right_pressed = False
+        self.up_pressed = False
+        self.down_pressed = False
+
+        # Инициализация музыки
+        try:
+            self.music = arcade.Sound("sound/music/OutOfSpace.wav")
+            self.music_player = self.music.play(loop=True)
+        except Exception as e:
+            print(f"Failed to load music: {e}")
 
     def __init__(self, window, player_position=None):
         super().__init__()

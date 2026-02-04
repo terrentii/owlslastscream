@@ -8,6 +8,75 @@ import math
 
 
 class StartView(arcade.View):
+    def __init__(self, window):
+        super().__init__()
+        self.window = window
+        self.timer = 0.0
+        self.batch = Batch()
+        self.shape_list = arcade.shape_list.ShapeElementList()
+        self.name_game = None
+        self.rect_outline = None
+        self.owl_sprite = None
+        self.owl_scale = 10.0
+
+        self.snowflake_list = arcade.SpriteList()
+        self.owl_list = arcade.SpriteList()
+
+        self.background_texture = arcade.load_texture('resources/UI/spruces_start.png')
+        self.background_sprite = arcade.Sprite()
+        self.background_sprite.texture = self.background_texture
+        self.background_sprite.scale = 10.0
+        self.background_sprite.center_x = self.window.width / 2
+        self.background_sprite.center_y = self.window.height / 2
+
+        self.fon_owl_list = arcade.SpriteList()
+        self.fon_owl_list.append(self.background_sprite)
+
+        # Загрузка текстур для анимации совы
+        self.owl_textures = []
+        texture_files = [
+            'Sprite-0004.png',
+            'Sprite-0005.png',
+            'Sprite-0006.png',
+            'Sprite-0007.png',
+            'Sprite-0008.png',
+            'Sprite-0009.png',
+            'Sprite-0010.png',
+            'Sprite-0011.png'
+        ]
+        
+        for texture_file in texture_files:
+            texture = arcade.load_texture(f'resources/UI/Owl/{texture_file}')
+            self.owl_textures.append(texture)
+        
+        # Создание спрайта совы
+        self.owl_sprite = arcade.Sprite()
+        self.owl_sprite.center_x = -100  # Начальная позиция за левой границей экрана
+        self.owl_sprite.center_y = self.window.height * 0.7  # 70% от высоты экрана
+        self.owl_sprite.scale = 1.5
+        self.owl_sprite.texture = self.owl_textures[0]
+        self.owl_list.append(self.owl_sprite)
+        
+        # Параметры анимации
+        self.current_texture_index = 0
+        self.texture_change_frames = 5  # Количество кадров между сменой текстур
+        self.frame_count = 0
+        self.snowflake_spawn_chance = 0.2
+        self.snowflake_speed_min = 1.5
+        self.snowflake_speed_max = 4.0
+        self.snowflake_drift_min = -5.0
+        self.snowflake_drift_max = 0.7
+        self.snowflake_wobble_speed = 0.03
+        self.snowflake_wobble_amount = 0.8
+
+        self.snowflake_texture = arcade.make_soft_square_texture(8, arcade.color.WHITE_SMOKE, 255)
+
+        # Инициализация музыки
+        try:
+            self.music = arcade.Sound("sound/music/OutOfSpace.wav")
+            self.music_player = self.music.play(volume=1.0, loop=True)
+        except Exception as e:
+            print(f"Failed to load music: {e}")
     """Стартовый экран с таймером перехода в главное меню"""
     def __init__(self, window):
         super().__init__()

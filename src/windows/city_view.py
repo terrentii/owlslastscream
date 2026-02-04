@@ -3,9 +3,6 @@ import random
 import math
 from src.settings import settings
 from src.animations.RunningAlien import RunningAlien
-
-
-
 import json
 import os
 import time
@@ -16,7 +13,7 @@ class CityView(arcade.View):
         self.window = window
         self.save_file = "saves/city_save.json"
         self.last_save_time = 0
-        self.save_interval = 20  # seconds
+        self.save_interval = 20  # секунды
         self.player_position = player_position or self.load_save() or {'x': -4000, 'y': -1000}
         self.paused = False
 
@@ -41,12 +38,6 @@ class CityView(arcade.View):
         self.bg_list = arcade.SpriteList()
         self.bg_list.append(self.bg)
 
-        # Ночной фильтр
-        night_texture = arcade.load_texture('resources/background/night.png')
-        self.night = arcade.Sprite(night_texture, scale=20.0)
-        self.filter_list = arcade.SpriteList()
-        self.filter_list.append(self.night)
-
         # Камера
         self.camera = arcade.camera.Camera2D()
         self.camera.zoom = 0.75
@@ -58,7 +49,7 @@ class CityView(arcade.View):
         self.alien_list = arcade.SpriteList()
         self.alien_list.append(self.alien)
 
-        # Сюжетные фазы (пример)
+        # Сюжетные фазы
         self.story_phases = self.load_story_phases()
 
         # Стрелка над пришельцем
@@ -117,7 +108,6 @@ class CityView(arcade.View):
         self.dialogue_speaker.left, self.dialogue_speaker.bottom = 20, 20
         self.dialogue_sprite_list.append(self.dialogue_speaker)
 
-
         # Управление
         self.left_pressed = self.right_pressed = self.up_pressed = self.down_pressed = False
 
@@ -128,16 +118,31 @@ class CityView(arcade.View):
         self.snowflake_drift_min, self.snowflake_drift_max = -5.0, 0.7
         self.snowflake_wobble_speed, self.snowflake_wobble_amount = 0.03, 0.8
         self.snowflake_texture = arcade.make_soft_square_texture(8, arcade.color.WHITE_SMOKE, 255)
+        
+        # Магазин
+        shop_texture = arcade.load_texture('resources/buildings/shop.png')
+        self.shop = arcade.Sprite(shop_texture, scale=6.0)
+        self.shop.center_x = -1000  # Новая позиция X
+        self.shop.center_y = 500   # Новая позиция Y
+        self.shop_list = arcade.SpriteList()
+        self.shop_list.append(self.shop)
+
+        # Музыка
+        try:
+            self.music = arcade.Sound("sound/music/OutOfSpace.wav")
+            self.music_player = self.music.play(loop=True)
+        except Exception as e:
+            print(f"Failed to load music: {e}")
 
     def update_snowflakes(self):
         if random.random() < self.snowflake_spawn_chance:
             snowflake = arcade.Sprite(self.snowflake_texture)
             snowflake.scale = random.uniform(0.5, 1.5)
             snowflake.center_x = random.uniform(
-                self.camera.position.x - self.window.width // 2,
-                self.camera.position.x + self.window.width // 2
+                self.camera.position.x - self.window.width // 2 - 500,
+                self.camera.position.x + self.window.width // 2 + 500
             )
-            snowflake.center_y = self.camera.position.y + self.window.height // 2 + 50
+            snowflake.center_y = self.camera.position.y + self.window.height // 2 + 500
             snowflake.speed = random.uniform(self.snowflake_speed_min, self.snowflake_speed_max)
             snowflake.drift = random.uniform(self.snowflake_drift_min, self.snowflake_drift_max)
             snowflake.base_x = snowflake.center_x
@@ -149,7 +154,7 @@ class CityView(arcade.View):
             snowflake.center_x += snowflake.drift
             snowflake.wobble_offset += self.snowflake_wobble_speed
             snowflake.center_x = snowflake.base_x + math.sin(snowflake.wobble_offset) * self.snowflake_wobble_amount
-            if snowflake.center_y < self.camera.position.y - self.window.height // 2:
+            if snowflake.center_y < self.camera.position.y - self.window.height // 2 - 500:
                 snowflake.remove_from_sprite_lists()
 
 
@@ -161,7 +166,6 @@ class CityView(arcade.View):
         self.bg_list.draw(pixelated=True)
         self.wall_list.draw()
         self.snowflake_list.draw()
-        self.filter_list.draw()
         self.alien_list.draw(pixelated=True)
         self.arrow_list.draw(pixelated=True)
 
