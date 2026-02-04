@@ -121,11 +121,43 @@ class CityView(arcade.View):
         
         # Магазин
         shop_texture = arcade.load_texture('resources/buildings/shop.png')
-        self.shop = arcade.Sprite(shop_texture, scale=6.0)
-        self.shop.center_x = -1000  # Новая позиция X
-        self.shop.center_y = 500   # Новая позиция Y
+        self.shop = arcade.Sprite(shop_texture, scale=8.0)
+        self.shop.center_x = -185
+        self.shop.center_y = 2415
         self.shop_list = arcade.SpriteList()
         self.shop_list.append(self.shop)
+
+        # Пришелец Sor
+        sor_texture = arcade.load_texture('resources/persons/alien_sor/alien_sor_not_animated.png')
+        self.sor = arcade.Sprite(sor_texture, scale=4.0)
+        self.sor.center_x = -670
+        self.sor.center_y = 2380
+        self.sor_list = arcade.SpriteList()
+        self.sor_list.append(self.sor)
+
+        # Пришелец Ness (У магазина)
+        ness1_texture = arcade.load_texture('resources/persons/alien_ness/ness_in_spacesuit_darked.png')
+        self.ness1 = arcade.Sprite(ness1_texture, scale=3.0)
+        self.ness1.center_x = -50
+        self.ness1.center_y = 2020
+        self.ness1.width = 120
+        self.ness1.height = 120
+        self.ness1_list = arcade.SpriteList()
+        self.ness1_list.append(self.ness1)
+
+        # Пришелец Ness (У дороги)
+        ness2_texture = arcade.load_texture('resources/persons/alien_ness/ness_in_spacesuit_darked.png')
+        self.ness2 = arcade.Sprite(ness2_texture, scale=3.0)
+        self.ness2.center_x = -2180
+        self.ness2.center_y = -850
+        self.ness2.width = 120
+        self.ness2.height = 120
+        self.ness2_list = arcade.SpriteList()
+        self.ness2_list.append(self.ness2)
+
+        # Диалоговые состояния
+        self.dialogue_active = False
+        self.dialogue_text = ""
 
         # Музыка
         try:
@@ -165,9 +197,18 @@ class CityView(arcade.View):
         # Отрисовка элементов игрового мира
         self.bg_list.draw(pixelated=True)
         self.wall_list.draw()
+        self.shop_list.draw(pixelated=True)
+        self.sor_list.draw(pixelated=True)
+        self.ness1_list.draw(pixelated=True)
+        self.ness2_list.draw(pixelated=True)
         self.snowflake_list.draw()
         self.alien_list.draw(pixelated=True)
         self.arrow_list.draw(pixelated=True)
+
+        # Отрисовка диалогового окна
+        if hasattr(self, 'dialogue_active') and self.dialogue_active:
+            self.dialogue_sprite_list.draw(pixelated=True)
+            self.dialogue_text_sprite.draw()
 
         # Диалоговое окно (если активно)
         if hasattr(self, 'dialogue_active') and self.dialogue_active:
@@ -219,6 +260,16 @@ class CityView(arcade.View):
             self.alien.center_x -= self.alien.change_x
             self.alien.center_y -= self.alien.change_y
 
+        # Проверка коллизии с ness1
+        if arcade.check_for_collision(self.alien, self.ness1):
+            self.alien.center_x -= self.alien.change_x
+            self.alien.center_y -= self.alien.change_y
+
+        # Проверка коллизии с ness2
+        if arcade.check_for_collision(self.alien, self.ness2):
+            self.alien.center_x -= self.alien.change_x
+            self.alien.center_y -= self.alien.change_y
+
         # Позиционирование камеры
         camera_x = self.alien.center_x
         camera_y = self.alien.center_y + settings.height * 0.2
@@ -248,6 +299,52 @@ class CityView(arcade.View):
         if self.show_arrow:
             self.arrow.center_x = self.alien.center_x
             self.arrow.center_y = self.alien.center_y + 70
+
+            # Целевая точка для стрелки
+            target_x = -205
+            target_y = 2110
+            
+            # Угол между текущей позицией пришельца и целью
+            dx = target_x - self.alien.center_x
+            dy = target_y - self.alien.center_y
+            angle = math.degrees(math.atan2(dy, dx))
+
+            # Поворачиваем стрелку
+            self.arrow.angle = -angle + 90
+
+        # Диалог с Ness 1
+        distance_to_ness1 = arcade.get_distance_between_sprites(self.alien, self.ness1)
+        if not hasattr(self, 'dialogue_active'):
+            self.dialogue_active = False
+            self.dialogue_text = ""
+
+        if distance_to_ness1 < 150 and not self.dialogue_active:
+            self.dialogue_active = True
+            self.dialogue_text = "К сожалению магазин пока закрыт, поэтому переоденемся здесь, жми кнопку 'C'!"
+            self.dialogue_text_sprite.text = self.dialogue_text
+            self.dialogue_speaker.texture = arcade.load_texture('resources/persons/alien_ness/ness_in_spacesuit.png')
+        elif distance_to_ness1 >= 150 and self.dialogue_active and self.dialogue_text == "К сожалению магазин пока закрыт, поэтому переоденемся здесь, жми кнопку 'C'!":
+            self.dialogue_active = False
+            self.dialogue_text = ""
+            self.dialogue_text_sprite.text = self.dialogue_text
+            # Скрываем стрелку после завершения диалога с ness1
+            self.show_arrow = False
+            self.arrow.alpha = 0
+
+        # Диалог с Ness 2
+        distance_to_ness2 = arcade.get_distance_between_sprites(self.alien, self.ness2)
+        if distance_to_ness2 < 150 and not self.dialogue_active:
+            self.dialogue_active = True
+            self.dialogue_text = "Нам нужно быть осторожнее! Здесь живут люди, надо быстрее найти магазин одежды, чтобы маскироваться!"
+            self.dialogue_text_sprite.text = self.dialogue_text
+            self.dialogue_speaker.texture = arcade.load_texture('resources/persons/alien_ness/ness_in_spacesuit.png')
+        elif distance_to_ness2 >= 150 and self.dialogue_active and self.dialogue_text == "Нам нужно быть осторожнее! Здесь живут люди, надо быстрее найти магазин одежды, чтобы маскироваться!":
+            self.dialogue_active = False
+            self.dialogue_text = ""
+            self.dialogue_text_sprite.text = self.dialogue_text
+            # Показываем стрелку после завершения диалога с ness2
+            self.show_arrow = True
+            self.arrow.alpha = 255
 
         # Выход из локации
         if self.alien.center_x == -4200 and self.alien.center_y == -1000:
